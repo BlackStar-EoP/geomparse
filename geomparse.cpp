@@ -161,7 +161,7 @@ struct GeomMaterialEntry
     }
 };
 
-std::string parseString(uint8_t* data, uint32_t offset)
+std::string parseString(uint8_t* data, uint32_t& offset)
 {
     char str[64];
     memset(str, 0, sizeof(str));
@@ -261,6 +261,10 @@ struct GeomMeshHeader
 
     GeomAABB aabb_;
 
+    std::vector<float> floatsblock1;
+    std::vector<float> floatsblock2;
+
+
     struct MeshFloat
     {
         float m_val;
@@ -357,6 +361,24 @@ struct GeomMeshHeader
 
         
         printf("");
+    }
+
+    void parseFloatBlock(uint8_t* data)
+    {
+        uint32_t offset = meshBlock1EndAddress;
+        while (offset < textureBlock1Address)
+        {
+            float val = parse32(data, offset);
+            floatsblock1.push_back(val);
+        }
+
+        offset = meshBlock1EndAddress;
+        while (offset < textureBlock1Address)
+        {
+            float val = parse16(data, offset);
+            floatsblock2.push_back(val);
+        }
+
     }
 
     void parseBlock1(uint8_t* data)
@@ -509,8 +531,10 @@ struct Geom
         //for (auto& mesh : meshHeaders)
         {
             meshHeaders[i].parseBlock1(data);
+            meshHeaders[i].parseFloatBlock(data);
             meshHeaders[i].readTriangleData(data);
             //mesh.parseBlock1(data);
+            printf("");
         }
     }
 
