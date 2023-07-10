@@ -277,7 +277,7 @@ struct GeomMeshHeader
     {
         float vx, vy, vz;
         float tx, ty;
-        float id_;
+        uint32_t id_;
         MeshVertex(uint32_t id, float x, float y, float z, GeomAABB& aabb)
             : id_(id), vx(x), vy(y), vz(z)
         {
@@ -364,13 +364,13 @@ struct GeomMeshHeader
         uint32_t offset = meshBlock1Address;
         uint32_t length = meshBlock1EndAddress - meshBlock1Address;
         assert(length == meshBlock1Length);
-
+        uint32_t id = 0;
         for (uint16_t v = 0; v < meshBlock1Length / 4; v += 3)
         {
             float x = parsef32(data, offset);
             float y = parsef32(data, offset);
             float z = parsef32(data, offset);
-            meshBlock1.push_back(MeshVertex(v, x, y, z, aabb_));
+            meshBlock1.push_back(MeshVertex(id++, x, y, z, aabb_));
         }
 
         offset = textureBlock1Address;
@@ -387,14 +387,15 @@ struct GeomMeshHeader
         uint32_t v = 0;
         while (v < meshBlock1.size())
         {
-            MeshVertex vertex = meshBlock1[v];
+            MeshVertex& vertex = meshBlock1[v];
             ++v;
             for (uint32_t dup = v; dup < meshBlock1.size(); ++dup)
             {
-                if (vertex == meshBlock1[dup])
+                MeshVertex& vertex2 = meshBlock1[dup];
+                if (vertex == vertex2)
                 {
-                    vertex.duplicates.push_back(dup);
-                    meshBlock1[dup].duplicates.push_back(vertex.id_);
+                    vertex.duplicates.push_back(vertex2.id_);
+                    vertex2.duplicates.push_back(vertex.id_);
                 }
             }
             
