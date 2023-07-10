@@ -1,0 +1,7 @@
+.vs
+*.filters
+*.user
+log.txt
+x64
+*.mtl
+*.obj
