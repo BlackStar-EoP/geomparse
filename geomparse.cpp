@@ -433,10 +433,10 @@ struct GeomMeshHeader
             break;
         
         case 0x0C:
+            // Works in MONOLITH_BOX_break_break_1.geom.edge0
             triangles.push_back(MeshTriangle(v, v + 2, v + 1, nib));
-            v += 1;
-            triangles.push_back(MeshTriangle(v + 3, v + 2, v + 1, nib));
-            v += 3;
+            triangles.push_back(MeshTriangle(v, v + 3, v + 2, nib));
+            v += 4;
             break;
 
         case 0x0D:
@@ -756,9 +756,11 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_damage_Mesh.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Laserbeam/Laserbeam_MASTER.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh16.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh16.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh18.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh20.geom.edge");
+
+    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BOX/MONOLITH_BOX_break_break_1.geom.edge");
 
 
 #endif    
