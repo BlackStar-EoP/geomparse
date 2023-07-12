@@ -126,7 +126,7 @@ struct GeomMaterialEntry
         return ss.str();
     }
 
-    void dumpMaterial()
+    void dumpMaterial(const std::string& path)
     {
         /*
         newmtl Wood
@@ -150,7 +150,7 @@ struct GeomMaterialEntry
         illum : specifies an illumination model, using a numeric value.See Notes below for more detail on the illum keyword.The value 0 represents the simplest illumination model, relying on the Kd for the material modified by a texture map specified in a map_Kd statement if present.The compilers of this resource believe that the choice of illumination model is irrelevant for 3D printing use and is ignored on import by some software applications.For example, the MTL Loader in the threejs Javascript library appears to ignore illum statements.Comments welcome.
         map_Kd : specifies a color texture file to be applied to the diffuse reflectivity of the material.During rendering, map_Kd values are multiplied by the Kd values to derive the RGB components.
 */
-        std::string filename = getfilename();
+        std::string filename = path + getfilename();
         FILE* fp = fopen(filename.c_str(), "w+");
         fprintf(fp, "newmtl %s\n", textures[0].name.c_str());
         fprintf(fp, "Ka 1.000000 1.000000 1.000000\n");
@@ -195,11 +195,11 @@ struct GeomMaterial
         }
     }
 
-    void dumpMaterials()
+    void dumpMaterials(const std::string& path)
     {
         for (auto& e : materialEntries)
         {
-            e.dumpMaterial();
+            e.dumpMaterial(path);
         }
     }
 
@@ -309,8 +309,9 @@ struct GeomMeshHeader
     struct MeshTriangle
     {
         uint32_t v1_, v2_, v3_;
-        MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3)
-         : v1_(v1), v2_(v2), v3_(v3)
+        uint8_t nibble;
+        MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3, uint8_t nibbleval)
+         : v1_(v1), v2_(v2), v3_(v3), nibble(nibbleval)
         {}
 
         std::string v1()
@@ -380,24 +381,44 @@ struct GeomMeshHeader
         case 0x00:
             break;
         case 0x01:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            v += 1;
             break;
         case 0x02:
             break;
         case 0x03:
+            // TODO confirm
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v, v + 2, v + 3, nib));
+            v += 4;
             break;
         
         case 0x04:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             v += 1;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             v += 1;
             break;
 
         case 0x05:
+            // todo confirm
+            //triangles.push_back(MeshTriangle(v, v + 2, v + 4, nib));
+            //triangles.push_back(MeshTriangle(v + 1, v + 3, v + 5, nib));
+            v += 3;
             break;
+
         case 0x06:
             break;
         case 0x07:
+            // MONOLITH_LG_break_break_3 seems correct
+            v -= 2; // TODO confirm
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            v += 2;
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+
+            v += 4;
             break;
         case 0x08:
             break;
@@ -409,128 +430,36 @@ struct GeomMeshHeader
             break;
         
         case 0x0C:
-            triangles.push_back(MeshTriangle(v, v + 2, v + 1));
+            triangles.push_back(MeshTriangle(v, v + 2, v + 1, nib));
             v += 1;
-            triangles.push_back(MeshTriangle(v + 3, v + 2, v + 1));
+            triangles.push_back(MeshTriangle(v + 3, v + 2, v + 1, nib));
             v += 3;
             break;
 
         case 0x0D:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
             v += 4;
             break;
 
         case 0x0E:
+            //triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            //v += 1;
+            //triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            //v += 1;
+            v += 3;
             break;
 
         case 0x0F:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             v += 3;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             v += 3;
             break;
         }
     }
 
-    void writefaces1(std::vector<uint8_t>& prefacedata, std::vector<uint8_t>& facedata)
-    {
-
-        uint32_t v = 0u;
-
-        for (uint8_t face : facedata)
-        {
-            switch (face)
-            {
-            case 0xFF:
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                break;
-
-            case 0xDD:
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
-                v += 4;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
-                v += 4;
-                break;
-
-
-            case 0xCF:
-                triangles.push_back(MeshTriangle(v, v + 2, v + 1));
-                v += 1;
-                triangles.push_back(MeshTriangle(v + 3, v + 2, v + 1));
-                v += 3;
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                break;
-
-            case 0xDF:
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
-                v += 4;
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-
-                break;
-
-            case 0xF0:
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                break;
-
-            case 0xFD:
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
-                v += 4;
-
-                break;
-
-            case 0x4F:
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 1;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 1;
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
-                v += 3;
-
-
-                break;
-
-            case 0x00:
-                break;
-
-            default:
-                printf("");
-            }
-        }
-    }
-
-    void writefaces2(std::vector<uint8_t>& prefacedata, std::vector<uint8_t>& facedata)
+    void writefaces(std::vector<uint8_t>& prefacedata, std::vector<uint8_t>& facedata)
     {
         uint32_t v = 0u;
 
@@ -567,7 +496,7 @@ struct GeomMeshHeader
             facedata.push_back(triangle_data[i]);
         }
 
-        writefaces2(prefacedata, facedata);
+        writefaces(prefacedata, facedata);
     }
 
     void parseFloatBlock(uint8_t* data)
@@ -687,8 +616,10 @@ struct GeomMeshHeader
             //    fprintf(dmp, "f %u/%u %u/%u %u/%u\n", vertex-2, vertex - 2, vertex - 1, vertex - 1, vertex, vertex);
             //    vertex+=3;
             //}
+            uint32_t n_tri = 0;
             for (MeshTriangle& tri : triangles)
             {
+                fprintf(dmp, "#nib = 0x0%x tri#=%u\n", tri.nibble, n_tri++);
                 fprintf(dmp, "f %s %s %s\n", tri.v1().c_str(), tri.v2().c_str(), tri.v3().c_str());
             }
 
@@ -786,7 +717,7 @@ int main(int argc, char* argv[])
     const uint8_t NUM_FILES_TO_PARSE = 15;
     std::vector<const char*> files;
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_1.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_10.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_10.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_11.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_12.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_13.geom.edge");
@@ -801,12 +732,40 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_damage_Mesh.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_MASTER.geom.edge");
 
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_damage_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
+
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_1.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_damage_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_MASTER.geom.edge");
+    
+
 #endif    
 
 #ifdef MULTIPLE
     for (const char* file : files)
     {
 #endif
+        std::string path = file;
+        if (path.find_last_of("/") != std::string::npos)
+        {
+            path = path.substr(0, path.find_last_of("/")) + "/";
+        }
+
         FILE* fp = fopen(file, "rb");
         fseek(fp, 0L, SEEK_END);
         int geomsize = ftell(fp);
@@ -828,7 +787,7 @@ int main(int argc, char* argv[])
 
         GeomMaterial m;
         m.parse(matdata);
-        m.dumpMaterials();
+        m.dumpMaterials(path);
         geommaterial = m;
 
         Geom g(file, geomsize);
