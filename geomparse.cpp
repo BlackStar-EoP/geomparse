@@ -306,7 +306,35 @@ struct GeomMeshHeader
         std::vector<uint32_t> duplicates;
     };
 
+    struct MeshTriangle
+    {
+        uint32_t v1_, v2_, v3_;
+        MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3)
+         : v1_(v1), v2_(v2), v3_(v3)
+        {}
+
+        std::string v1()
+        {
+            std::stringstream ss;
+            ss << (v1_ + 1) << "/" << (v1_ + 1);
+            return ss.str();
+        }
+        std::string v2()
+        {
+            std::stringstream ss;
+            ss << (v2_ + 1) << "/" << (v2_ + 1);
+            return ss.str();
+        }
+        std::string v3()
+        {
+            std::stringstream ss;
+            ss << (v3_ + 1) << "/" << (v3_ + 1);
+            return ss.str();
+        }
+    };
+
     std::vector<MeshVertex> meshBlock1;
+    std::vector<MeshTriangle> triangles;
 
     void parse(GeomAABB& aabb, uint8_t* data, uint32_t offset)
     {
@@ -352,15 +380,77 @@ struct GeomMeshHeader
 
         uint16_t val1 = parse16(triangle_data, offset);
         uint16_t val2 = parse16(triangle_data, offset);
-        uint16_t val3 = parse16(triangle_data, offset);
+        uint16_t facedatastart = parse16(triangle_data, offset);
         uint16_t val4 = parse16(triangle_data, offset);
-        uint16_t val5 = parse16(triangle_data, offset);
-        uint16_t val6 = parse16(triangle_data, offset);
-        uint16_t val7 = parse16(triangle_data, offset);
-        uint16_t val8 = parse16(triangle_data, offset);
+
+        std::vector<uint8_t> prefacedata;
+        std::vector<uint8_t> facedata;
+        for (uint16_t i = 0; i < facedatastart; ++i)
+        {
+            prefacedata.push_back(triangle_data[i + 8]);
+        }
+
+        for (uint16_t i = 8 + facedatastart; i < meshTrianglesSize; ++i)
+        {
+            facedata.push_back(triangle_data[i]);
+        }
 
         
         printf("");
+        uint32_t v = 0u;
+
+        for (uint8_t face : facedata)
+        {
+            switch (face)
+            {
+            case 0xFF:
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                break;
+
+            case 0xDD:
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
+                v += 4;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
+                v += 4;
+                break;
+
+
+            case 0xDF:
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
+                v += 4;
+
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+
+                break;
+
+            case 0xF0:
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                break;
+
+            case 0x00:
+                break;
+
+            default:
+                printf("");
+            }
+        }
+
     }
 
     void parseFloatBlock(uint8_t* data)
@@ -455,8 +545,9 @@ struct GeomMeshHeader
                     {
                         fprintf(dmp, "%u, ", dup + 1);
                     }
-                   fprintf(dmp, ")\n");
+                   fprintf(dmp, ")");
                 }
+                fprintf(dmp, "\n");
 
                 if (!vertex.isValid)
                 {
@@ -473,11 +564,15 @@ struct GeomMeshHeader
                 index++;
             }
 
-            uint32_t vertex = 3;
-            while (vertex <= meshBlock1.size())
+            //uint32_t vertex = 3;
+            //while (vertex <= meshBlock1.size())
+            //{
+            //    fprintf(dmp, "f %u/%u %u/%u %u/%u\n", vertex-2, vertex - 2, vertex - 1, vertex - 1, vertex, vertex);
+            //    vertex+=3;
+            //}
+            for (MeshTriangle& tri : triangles)
             {
-                fprintf(dmp, "f %u/%u %u/%u %u/%u\n", vertex-2, vertex - 2, vertex - 1, vertex - 1, vertex, vertex);
-                vertex+=3;
+                fprintf(dmp, "f %s %s %s\n", tri.v1().c_str(), tri.v2().c_str(), tri.v3().c_str());
             }
 
             fclose(dmp);
@@ -561,44 +656,74 @@ int main(int argc, char* argv[])
         return -1;
     const char* file = argv[1];
 #else
-    const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/BaboCoin/BaboCoin_MASTER.geom.edge";
-    // 
+#define MULTIPLE
+    //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/BaboCoin/BaboCoin_MASTER.geom.edge";
+    const char* file = "D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_MASTER.geom.edge";
+    
     //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/Superball/superball_MASTER.geom.edge";
     //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge";
     //const char* file  = "D:/trash panic/reveng/Stage1_Geom.dmp/Piggybank/piggybank_MASTER.geom.edge";
       //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/YUDEN/YUDEN_MASTER.geom.edge";
     //const char* file = "D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge";
+    const uint8_t NUM_FILES = 15;
+    const uint8_t NUM_FILES_TO_PARSE = 15;
+    const char* files[NUM_FILES];
+    files[0] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_1.geom.edge";
+    files[1] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_10.geom.edge";
+    files[2] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_11.geom.edge";
+    files[3] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_12.geom.edge";
+    files[4] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_13.geom.edge";
+    files[5] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_2.geom.edge";
+    files[6] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_3.geom.edge";
+    files[7] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_4.geom.edge";
+    files[8] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_5.geom.edge";
+    files[9] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_6.geom.edge";
+    files[10] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_7.geom.edge";
+    files[11] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_8.geom.edge";
+    files[12] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_9.geom.edge";
+    files[13] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_damage_Mesh.geom.edge";
+    files[14] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_MASTER.geom.edge";
+
 #endif    
-    FILE* fp = fopen(file, "rb");
-    fseek(fp, 0L, SEEK_END);
-    int geomsize = ftell(fp);
-    fseek(fp, 0L, SEEK_SET);
 
-    uint8_t* data = new uint8_t[geomsize];
-    fread(data, 1, geomsize, fp);
-    fclose(fp);
+#ifdef MULTIPLE
+    for (uint8_t i = 0; i < NUM_FILES_TO_PARSE; ++i)
+    {
+        const char* file = files[i];
+#endif
+        FILE* fp = fopen(file, "rb");
+        fseek(fp, 0L, SEEK_END);
+        int geomsize = ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
 
-    std::string material = std::regex_replace(file, std::regex("geom.edge"), "mat.edge");
-    fp = fopen(material.c_str(), "rb");
-    fseek(fp, 0L, SEEK_END);
-    int matsize = ftell(fp);
-    fseek(fp, 0L, SEEK_SET);
+        uint8_t* data = new uint8_t[geomsize];
+        fread(data, 1, geomsize, fp);
+        fclose(fp);
 
-    uint8_t* matdata = new uint8_t[matsize];
-    fread(matdata, 1, matsize, fp);
-    fclose(fp);
+        std::string material = std::regex_replace(file, std::regex("geom.edge"), "mat.edge");
+        fp = fopen(material.c_str(), "rb");
+        fseek(fp, 0L, SEEK_END);
+        int matsize = ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
 
-    GeomMaterial m;
-    m.parse(matdata);
-    m.dumpMaterials();
-    geommaterial = m;
+        uint8_t* matdata = new uint8_t[matsize];
+        fread(matdata, 1, matsize, fp);
+        fclose(fp);
 
-    Geom g(file, geomsize);
-    g.parse(data);
-    g.parseMeshHeaders(data);
-    g.parseMesh(data);
-    g.dump_meshes();
+        GeomMaterial m;
+        m.parse(matdata);
+        m.dumpMaterials();
+        geommaterial = m;
 
+        Geom g(file, geomsize);
+        g.parse(data);
+        g.parseMeshHeaders(data);
+        g.parseMesh(data);
+        g.dump_meshes();
+
+#ifdef MULTIPLE
+    }
+#endif
     //while (offset < size)
     //{
     //    parse_4_bytes(data);
