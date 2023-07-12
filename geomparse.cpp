@@ -372,31 +372,70 @@ struct GeomMeshHeader
         }
     }
 
-    void readTriangleData(uint8_t* data)
+    
+    void parsenib(uint8_t nib, uint32_t& v)
     {
-        triangle_data = new uint8_t[meshTrianglesSize];
-        memcpy(triangle_data, data + meshTrianglesAddress, meshTrianglesSize);
-        uint32_t offset = 0;
-
-        uint16_t val1 = parse16(triangle_data, offset);
-        uint16_t val2 = parse16(triangle_data, offset);
-        uint16_t facedatastart = parse16(triangle_data, offset);
-        uint16_t val4 = parse16(triangle_data, offset);
-
-        std::vector<uint8_t> prefacedata;
-        std::vector<uint8_t> facedata;
-        for (uint16_t i = 0; i < facedatastart; ++i)
+        switch (nib)
         {
-            prefacedata.push_back(triangle_data[i + 8]);
-        }
-
-        for (uint16_t i = 8 + facedatastart; i < meshTrianglesSize; ++i)
-        {
-            facedata.push_back(triangle_data[i]);
-        }
-
+        case 0x00:
+            break;
+        case 0x01:
+            break;
+        case 0x02:
+            break;
+        case 0x03:
+            break;
         
-        printf("");
+        case 0x04:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            v += 1;
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            v += 1;
+            break;
+
+        case 0x05:
+            break;
+        case 0x06:
+            break;
+        case 0x07:
+            break;
+        case 0x08:
+            break;
+        case 0x09:
+            break;
+        case 0x0A:
+            break;
+        case 0x0B:
+            break;
+        
+        case 0x0C:
+            triangles.push_back(MeshTriangle(v, v + 2, v + 1));
+            v += 1;
+            triangles.push_back(MeshTriangle(v + 3, v + 2, v + 1));
+            v += 3;
+            break;
+
+        case 0x0D:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
+            v += 4;
+            break;
+
+        case 0x0E:
+            break;
+
+        case 0x0F:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            v += 3;
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+            v += 3;
+            break;
+        }
+    }
+
+    void writefaces1(std::vector<uint8_t>& prefacedata, std::vector<uint8_t>& facedata)
+    {
+
         uint32_t v = 0u;
 
         for (uint8_t face : facedata)
@@ -427,7 +466,7 @@ struct GeomMeshHeader
             case 0xCF:
                 triangles.push_back(MeshTriangle(v, v + 2, v + 1));
                 v += 1;
-                triangles.push_back(MeshTriangle(v+3, v + 2, v + 1));
+                triangles.push_back(MeshTriangle(v + 3, v + 2, v + 1));
                 v += 3;
 
                 triangles.push_back(MeshTriangle(v, v + 1, v + 2));
@@ -489,7 +528,46 @@ struct GeomMeshHeader
                 printf("");
             }
         }
+    }
 
+    void writefaces2(std::vector<uint8_t>& prefacedata, std::vector<uint8_t>& facedata)
+    {
+        uint32_t v = 0u;
+
+        for (uint8_t face : facedata)
+        {
+            uint8_t nib1 = (face >> 4) & 0x0F;
+            uint8_t nib2 = face & 0x0F;
+            parsenib(nib1, v);
+            parsenib(nib2, v);
+
+        }
+    }
+
+    void readTriangleData(uint8_t* data)
+    {
+        triangle_data = new uint8_t[meshTrianglesSize];
+        memcpy(triangle_data, data + meshTrianglesAddress, meshTrianglesSize);
+        uint32_t offset = 0;
+
+        uint16_t val1 = parse16(triangle_data, offset);
+        uint16_t val2 = parse16(triangle_data, offset);
+        uint16_t facedatastart = parse16(triangle_data, offset);
+        uint16_t val4 = parse16(triangle_data, offset);
+
+        std::vector<uint8_t> prefacedata;
+        std::vector<uint8_t> facedata;
+        for (uint16_t i = 0; i < facedatastart; ++i)
+        {
+            prefacedata.push_back(triangle_data[i + 8]);
+        }
+
+        for (uint16_t i = 8 + facedatastart; i < meshTrianglesSize; ++i)
+        {
+            facedata.push_back(triangle_data[i]);
+        }
+
+        writefaces2(prefacedata, facedata);
     }
 
     void parseFloatBlock(uint8_t* data)
