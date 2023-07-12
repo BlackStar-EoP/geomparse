@@ -424,6 +424,18 @@ struct GeomMeshHeader
                 break;
 
 
+            case 0xCF:
+                triangles.push_back(MeshTriangle(v, v + 2, v + 1));
+                v += 1;
+                triangles.push_back(MeshTriangle(v+3, v + 2, v + 1));
+                v += 3;
+
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                break;
+
             case 0xDF:
                 triangles.push_back(MeshTriangle(v, v + 1, v + 2));
                 triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
@@ -441,6 +453,33 @@ struct GeomMeshHeader
                 v += 3;
                 triangles.push_back(MeshTriangle(v, v + 1, v + 2));
                 v += 3;
+                break;
+
+            case 0xFD:
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3));
+                v += 4;
+
+                break;
+
+            case 0x4F:
+
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 1;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 1;
+
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2));
+                v += 3;
+
+
                 break;
 
             case 0x00:
@@ -667,29 +706,28 @@ int main(int argc, char* argv[])
     //const char* file = "D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge";
     const uint8_t NUM_FILES = 15;
     const uint8_t NUM_FILES_TO_PARSE = 15;
-    const char* files[NUM_FILES];
-    files[0] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_1.geom.edge";
-    files[1] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_10.geom.edge";
-    files[2] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_11.geom.edge";
-    files[3] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_12.geom.edge";
-    files[4] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_13.geom.edge";
-    files[5] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_2.geom.edge";
-    files[6] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_3.geom.edge";
-    files[7] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_4.geom.edge";
-    files[8] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_5.geom.edge";
-    files[9] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_6.geom.edge";
-    files[10] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_7.geom.edge";
-    files[11] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_8.geom.edge";
-    files[12] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_9.geom.edge";
-    files[13] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_damage_Mesh.geom.edge";
-    files[14] = "D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_MASTER.geom.edge";
+    std::vector<const char*> files;
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_1.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_10.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_11.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_12.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_13.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_8.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_9.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_damage_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_MASTER.geom.edge");
 
 #endif    
 
 #ifdef MULTIPLE
-    for (uint8_t i = 0; i < NUM_FILES_TO_PARSE; ++i)
+    for (const char* file : files)
     {
-        const char* file = files[i];
 #endif
         FILE* fp = fopen(file, "rb");
         fseek(fp, 0L, SEEK_END);
