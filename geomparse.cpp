@@ -379,8 +379,11 @@ struct GeomMeshHeader
         switch (nib)
         {
         case 0x00:
+            v += 6;
             break;
         case 0x01:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            v += 1;
             triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             v += 1;
             break;
@@ -443,11 +446,11 @@ struct GeomMeshHeader
             break;
 
         case 0x0E:
-            //triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             //v += 1;
-            //triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v, v + 1, v + 3, nib));
             //v += 1;
-            v += 3;
+            v += 2;
             break;
 
         case 0x0F:
@@ -744,7 +747,7 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
 
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_1.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_2.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_3.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_4.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_5.geom.edge");
@@ -752,7 +755,11 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_7.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_damage_Mesh.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_MASTER.geom.edge");
-    
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Laserbeam/Laserbeam_MASTER.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh16.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh18.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh20.geom.edge");
+
 
 #endif    
 
