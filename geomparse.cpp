@@ -374,7 +374,7 @@ struct GeomMeshHeader
     }
 
     
-    void parsenib(uint8_t nib, uint32_t& v)
+    void parsenib(uint8_t nib, uint8_t prevnib, uint32_t& v)
     {
         switch (nib)
         {
@@ -408,9 +408,21 @@ struct GeomMeshHeader
 
         case 0x05:
             // todo confirm
-            //triangles.push_back(MeshTriangle(v, v + 2, v + 4, nib));
-            //triangles.push_back(MeshTriangle(v + 1, v + 3, v + 5, nib));
+            //triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            //triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            //v += 4;
+
+            // works for monolith L damage 3
+            v -= 1;
+
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v, v + 2, v + 5, nib));
             v += 3;
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            v += 1;
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            v += 1;
+
             break;
 
         case 0x06:
@@ -443,8 +455,18 @@ struct GeomMeshHeader
             break;
 
         case 0x0D:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            if (prevnib != 5)
+            {
+                // works for most
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            }
+            else
+            {
+                // works for monolith l damage 3
+                triangles.push_back(MeshTriangle(v, v + 1, v + 3, nib));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            }
             v += 4;
             break;
 
@@ -468,14 +490,15 @@ struct GeomMeshHeader
     void writefaces(std::vector<uint8_t>& prefacedata, std::vector<uint8_t>& facedata)
     {
         uint32_t v = 0u;
-
+        uint8_t prevnib = 0u;
         for (uint8_t face : facedata)
         {
             uint8_t nib1 = (face >> 4) & 0x0F;
             uint8_t nib2 = face & 0x0F;
-            parsenib(nib1, v);
-            parsenib(nib2, v);
-
+            parsenib(nib1, prevnib, v);
+            prevnib = nib1;
+            parsenib(nib2, prevnib, v);
+            prevnib = nib2;
         }
     }
 
@@ -735,13 +758,13 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_7.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_8.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_9.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_damage_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_damage_Mesh.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_MASTER.geom.edge");
 
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_1.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_4.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_5.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_6.geom.edge");
