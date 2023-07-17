@@ -382,11 +382,23 @@ struct GeomMeshHeader
             v += 6;
             break;
         case 0x01:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 1;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 1;
+            if (prevnib != 0x0E)
+            {
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+            }
+            else
+            {
+                /* MONOLITH_L_MASTER works prev nib is 0x0E */
+                v -= 1;
+                triangles.push_back(MeshTriangle(v, v + 2, v + 4, nib));
+                triangles.push_back(MeshTriangle(v, v + 4, v + 3, nib));
+                v += 5;
+            }
             break;
+
         case 0x02:
             break;
         case 0x03:
@@ -412,17 +424,22 @@ struct GeomMeshHeader
             //triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
             //v += 4;
 
-            // works for monolith L damage 3
-            v -= 1;
+            if (prevnib == 0x0E) /* monolith L break 4 */
+            {
+            }
+            if (prevnib == 0x0D)
+            {
+                // works for monolith L damage 3
+                v -= 1;
 
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            triangles.push_back(MeshTriangle(v, v + 2, v + 5, nib));
-            v += 3;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 1;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 1;
-
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                triangles.push_back(MeshTriangle(v, v + 2, v + 5, nib));
+                v += 3;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+            }
             break;
 
         case 0x06:
@@ -764,13 +781,13 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_1.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_2.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_4.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_5.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_6.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_7.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_damage_Mesh.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
 
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_1.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_2.geom.edge");
@@ -788,6 +805,91 @@ int main(int argc, char* argv[])
 
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BOX/MONOLITH_BOX_break_break_1.geom.edge");
 
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_10.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_11.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_12.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_13.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_8.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_9.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_damage_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
+
+
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break8.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_damage_damage.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag5.geom.edge");
+
+
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_10.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_11.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_8.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_9.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh10.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh11.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh12.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh13.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh14.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh15.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh16.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh17.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh18.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh19.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh20.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh21.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh22.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh8.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh9.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_damage_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_MASTER.geom.edge");
+
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh10.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh2.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh4.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh5.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh6.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh7.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh9.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_MASTER.geom.edge");
+
+    //files.push_back("D:/trash panic/reveng/Mission_1_Geom.dmp/STAGE3_HAIKEI/STAGE3SD__NAGASHIMA_FLOWER1_NikaiKABE03.geom.edge");
 
 #endif    
 
