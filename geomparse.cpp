@@ -384,18 +384,26 @@ struct GeomMeshHeader
         case 0x01:
             if (prevnib != 0x0E)
             {
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-            }
-            else
-            {
                 /* MONOLITH_L_MASTER works prev nib is 0x0E */
                 v -= 1;
                 triangles.push_back(MeshTriangle(v, v + 2, v + 4, nib));
                 triangles.push_back(MeshTriangle(v, v + 4, v + 3, nib));
                 v += 5;
+            }
+            if (prevnib == 0x0D)
+            {
+                //* MONOLITH_L break 1 */
+                v -= 6;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 5, nib));
+                v += 6;
+            }
+            else
+            {
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
             }
             break;
 
@@ -434,11 +442,15 @@ struct GeomMeshHeader
             break;
 
         case 0x05:
-            // todo confirm
-            //triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            //triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-            //v += 4;
 
+            if (prevnib == 0x01) /* monolith L break 1 */
+            {
+                v -= 4;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                triangles.push_back(MeshTriangle(v, v + 2, v + 3, nib));
+                v += 4;
+
+            }
             if (prevnib == 0x0E) /* monolith L break 4 */
             {
             }
