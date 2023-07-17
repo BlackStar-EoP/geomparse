@@ -412,10 +412,25 @@ struct GeomMeshHeader
             break;
         
         case 0x04:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 1;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 1;
+            if (prevnib == 0x07)
+            {
+                v -= 2;
+
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+
+                v += 2;
+
+            }
+            else
+            {
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+            }
             break;
 
         case 0x05:
@@ -445,13 +460,23 @@ struct GeomMeshHeader
         case 0x06:
             break;
         case 0x07:
-            // MONOLITH_LG_break_break_3 seems correct
-            v -= 2; // TODO confirm
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-            v += 2;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            if (prevnib == 0x0F)
+            {
+                // MONOLITH_LG_break_break_3 seems correct
+                v -= 2; // TODO confirm
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+                v += 2;
+                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            }
+            if (prevnib == 0x0D)
+            {
+                v -= 3;
+                triangles.push_back(MeshTriangle(v, v + 2, v + 3, nib));
+                v += 3;
+                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            }
 
             v += 4;
             break;
@@ -779,7 +804,7 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_MASTER.geom.edge");
 
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_1.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_1.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_2.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_4.geom.edge");
@@ -787,7 +812,7 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_6.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_7.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_damage_Mesh.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
 
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_1.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_2.geom.edge");
