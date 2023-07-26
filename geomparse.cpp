@@ -445,15 +445,15 @@ struct GeomMeshHeader
         int idx1 = triangles.size() - 2;
         int idx2 = triangles.size() - 1;
 
-        if (triangles[idx1] == parsedTriangles[idx1])
-            printf("");
-        else
-            printf("");
+        //if (triangles[idx1] == parsedTriangles[idx1])
+        //    printf("");
+        //else
+        //    printf("");
 
-        if (triangles[idx2] == parsedTriangles[idx2])
-            printf("");
-        else
-            printf("");
+        //if (triangles[idx2] == parsedTriangles[idx2])
+        //    printf("");
+        //else
+        //    printf("");
 
     }
 
@@ -817,7 +817,9 @@ struct GeomMeshHeader
             //    vertex+=3;
             //}
             uint32_t n_tri = 0;
-            for (MeshTriangle& tri : triangles)
+            
+            //for (MeshTriangle& tri : triangles)
+            for (MeshTriangle& tri : parsedTriangles)
             {
                 fprintf(dmp, "#nib = 0x0%x tri#=%u\n", tri.nibble, n_tri++);
                 fprintf(dmp, "f %s %s %s\n", tri.v1().c_str(), tri.v2().c_str(), tri.v3().c_str());
@@ -907,8 +909,30 @@ int main(int argc, char* argv[])
 #define MULTIPLE
     std::vector<const char*> files;
     //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen1/Pen1_MASTER.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Mugcup/Mugcup_MASTER.geom.edge");
-
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Mugcup/Mugcup_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Teapot/Teapot_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/BaboCoin/BaboCoin_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Mugcup/Mugcup_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/YUBIWA/YUBIWA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/KOUSUI_BOTTLE/KOUSUI_BOTTLE_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen1/Pen1_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Denkyu/denkyu_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Daruma/Daruma_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Danberu/Danberu_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Eraser/Eraser_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Hasami/hasami_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Hotchkiss/hotchkiss_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Keitaidenwa/KEITAIDENWA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Lighter/lighter_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Matoryoshika/MATORYOSHIKA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen2/Pen2_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Yunomi/Yunomi_MASTER.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/KANDENCHI_MARU/KANDENCHI_MARU_MASTER.geom.edge");
+    
+    
+    
+    
 
 #endif    
 
@@ -941,7 +965,9 @@ int main(int argc, char* argv[])
         fread(matdata, 1, matsize, fp);
         fclose(fp);
 
+
         std::string indexarray = path + "indexarray.idx";
+        //std::string indexarray = path + "gomibako_gomibako_1.geom.edge1_indexarray.idx";
         fp = fopen(indexarray.c_str(), "rb");
         fseek(fp, 0L, SEEK_END);
         int idxsize = ftell(fp);
