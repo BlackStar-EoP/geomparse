@@ -225,6 +225,55 @@ struct GeomAABB
     float maxZ;
 };
 
+struct MeshTriangle
+{
+    uint32_t v1_, v2_, v3_;
+    uint8_t nibble;
+    MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3, uint8_t nibbleval)
+        : v1_(v1), v2_(v2), v3_(v3), nibble(nibbleval)
+    {}
+
+    std::string v1()
+    {
+        std::stringstream ss;
+        ss << (v1_ + 1) << "/" << (v1_ + 1);
+        return ss.str();
+    }
+    std::string v2()
+    {
+        std::stringstream ss;
+        ss << (v2_ + 1) << "/" << (v2_ + 1);
+        return ss.str();
+    }
+    std::string v3()
+    {
+        std::stringstream ss;
+        ss << (v3_ + 1) << "/" << (v3_ + 1);
+        return ss.str();
+    }
+
+    bool operator == (const MeshTriangle& t2) const
+    {
+        return (v1_ == t2.v1_) &&
+               (v2_ == t2.v2_) &&
+               (v3_ == t2.v3_);
+    }
+};
+
+std::vector<MeshTriangle> parsedTriangles;
+void parse_index_array(uint8_t* idxdata, uint32_t idxsize)
+{
+    uint32_t offset = 0;
+    while (offset < idxsize)
+    {
+        uint16_t i1 = parse16(idxdata, offset);
+        uint16_t i2 = parse16(idxdata, offset);
+        uint16_t i3 = parse16(idxdata, offset);
+        parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
+    }
+    printf("");
+}
+
 struct GeomMeshHeader
 {
     uint32_t signature;
@@ -306,34 +355,6 @@ struct GeomMeshHeader
         std::vector<uint32_t> duplicates;
     };
 
-    struct MeshTriangle
-    {
-        uint32_t v1_, v2_, v3_;
-        uint8_t nibble;
-        MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3, uint8_t nibbleval)
-         : v1_(v1), v2_(v2), v3_(v3), nibble(nibbleval)
-        {}
-
-        std::string v1()
-        {
-            std::stringstream ss;
-            ss << (v1_ + 1) << "/" << (v1_ + 1);
-            return ss.str();
-        }
-        std::string v2()
-        {
-            std::stringstream ss;
-            ss << (v2_ + 1) << "/" << (v2_ + 1);
-            return ss.str();
-        }
-        std::string v3()
-        {
-            std::stringstream ss;
-            ss << (v3_ + 1) << "/" << (v3_ + 1);
-            return ss.str();
-        }
-    };
-
     std::vector<MeshVertex> meshBlock1;
     std::vector<MeshTriangle> triangles;
 
@@ -371,6 +392,66 @@ struct GeomMeshHeader
         {
             offsets[i] = parse32(data, offset);
         }
+    }
+
+    void parsenib2(uint8_t nib, uint8_t prevnib, uint32_t& v)
+    {
+        switch (nib)
+        {
+        case 0x00:
+            break;
+        case 0x01:
+            break;
+        case 0x02:
+            break;
+        case 0x03:
+            break;
+        case 0x04:
+            break;
+        case 0x05:
+            triangles.push_back(MeshTriangle(v, v - 2, v + 1, nib));
+            triangles.push_back(MeshTriangle(v + 1, v - 2, v + 2, nib));
+            v += 3;
+            break;
+        case 0x06:
+            break;
+        case 0x07:
+            break;
+        case 0x08:
+            break;
+        case 0x09:
+            break;
+        case 0x0A:
+            break;
+        case 0x0B:
+            break;
+        case 0x0C:
+            break;
+        case 0x0D:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v + 2, v + 1, v + 3, nib));
+            v += 3;
+
+            break;
+        case 0x0E:
+            break;
+        case 0x0F:
+            break;
+        }
+
+        int idx1 = triangles.size() - 2;
+        int idx2 = triangles.size() - 1;
+
+        if (triangles[idx1] == parsedTriangles[idx1])
+            printf("");
+        else
+            printf("");
+
+        if (triangles[idx2] == parsedTriangles[idx2])
+            printf("");
+        else
+            printf("");
+
     }
 
     
@@ -511,13 +592,15 @@ struct GeomMeshHeader
                 v += 4;
                 triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
 
-                v += 2;
+                v += 3;
             }
             if (prevnib == 0x07)
             {
                 triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
                 v += 1;
                 triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+                v += 1;
+
                 v += 1;
             }
 
@@ -580,9 +663,9 @@ struct GeomMeshHeader
         {
             uint8_t nib1 = (face >> 4) & 0x0F;
             uint8_t nib2 = face & 0x0F;
-            parsenib(nib1, prevnib, v);
+            parsenib2(nib1, prevnib, v);
             prevnib = nib1;
-            parsenib(nib2, prevnib, v);
+            parsenib2(nib2, prevnib, v);
             prevnib = nib2;
         }
     }
@@ -819,145 +902,9 @@ int main(int argc, char* argv[])
     const char* file = argv[1];
 #else
 #define MULTIPLE
-    //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/BaboCoin/BaboCoin_MASTER.geom.edge";
-    const char* file = "D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_MASTER.geom.edge";
-    
-    //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/Superball/superball_MASTER.geom.edge";
-    //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge";
-    //const char* file  = "D:/trash panic/reveng/Stage1_Geom.dmp/Piggybank/piggybank_MASTER.geom.edge";
-      //const char* file = "D:/trash panic/reveng/Stage1_Geom.dmp/YUDEN/YUDEN_MASTER.geom.edge";
-    //const char* file = "D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge";
-    const uint8_t NUM_FILES = 15;
-    const uint8_t NUM_FILES_TO_PARSE = 15;
     std::vector<const char*> files;
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_10.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_11.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_12.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_13.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_5.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_6.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_7.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_8.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_break_break_9.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_damage_Mesh.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BIG/MONOLITH_BIG_MASTER.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen1/Pen1_MASTER.geom.edge");
 
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_1.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_2.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_4.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_5.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_6.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_break_break_7.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_damage_Mesh.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
-
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_5.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_6.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_break_break_7.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_damage_Mesh.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_LG/MONOLITH_LG_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Laserbeam/Laserbeam_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh16.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh18.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/INFOBAR/INFOBAR_break_Mesh20.geom.edge");
-
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_BOX/MONOLITH_BOX_break_break_1.geom.edge");
-
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_10.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_11.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_12.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_13.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_5.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_6.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_7.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_8.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_break_break_9.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_damage_Mesh.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
-
-
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break5.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break6.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break7.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_break_break8.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_damage_damage.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_slag_slag5.geom.edge");
-
-
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_10.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_11.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_5.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_6.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_7.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_8.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_break_9.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh10.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh11.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh12.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh13.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh14.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh15.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh16.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh17.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh18.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh19.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh20.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh21.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh22.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh5.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh6.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh7.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh8.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_break_Mesh9.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_damage_Mesh.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/Billding_LOW/BILL_LOW_MASTER.geom.edge");
-
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh10.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh2.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh4.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh5.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh6.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh7.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh9.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_MASTER.geom.edge");
-
-    //files.push_back("D:/trash panic/reveng/Mission_1_Geom.dmp/STAGE3_HAIKEI/STAGE3SD__NAGASHIMA_FLOWER1_NikaiKABE03.geom.edge");
 
 #endif    
 
@@ -989,6 +936,17 @@ int main(int argc, char* argv[])
         uint8_t* matdata = new uint8_t[matsize];
         fread(matdata, 1, matsize, fp);
         fclose(fp);
+
+        std::string indexarray = path + "indexarray.idx";
+        fp = fopen(indexarray.c_str(), "rb");
+        fseek(fp, 0L, SEEK_END);
+        int idxsize = ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
+        uint8_t* idxdata = new uint8_t[idxsize];
+        fread(idxdata, 1, idxsize, fp);
+        fclose(fp);
+
+        parse_index_array(idxdata, idxsize);
 
         GeomMaterial m;
         m.parse(matdata);
