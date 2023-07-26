@@ -401,6 +401,9 @@ struct GeomMeshHeader
         case 0x00:
             break;
         case 0x01:
+            triangles.push_back(MeshTriangle(v - 1, v, v + 1, nib));
+            triangles.push_back(MeshTriangle(v + 1, v, v + 2, nib));
+            v += 2;
             break;
         case 0x02:
             break;
@@ -903,7 +906,8 @@ int main(int argc, char* argv[])
 #else
 #define MULTIPLE
     std::vector<const char*> files;
-    files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen1/Pen1_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen1/Pen1_MASTER.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Mugcup/Mugcup_MASTER.geom.edge");
 
 
 #endif    
