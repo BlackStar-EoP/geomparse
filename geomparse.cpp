@@ -907,53 +907,76 @@ int main(int argc, char* argv[])
 #else
 #define MULTIPLE
     std::vector<const char*> files;
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen1/Pen1_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Mugcup/Mugcup_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Teapot/Teapot_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/BaboCoin/BaboCoin_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Mugcup/Mugcup_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/YUBIWA/YUBIWA_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/KOUSUI_BOTTLE/KOUSUI_BOTTLE_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen1/Pen1_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Denkyu/denkyu_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Daruma/Daruma_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Danberu/Danberu_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Eraser/Eraser_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Hasami/hasami_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Hotchkiss/hotchkiss_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Keitaidenwa/KEITAIDENWA_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Lighter/lighter_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Matoryoshika/MATORYOSHIKA_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen2/Pen2_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Yunomi/Yunomi_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/KANDENCHI_MARU/KANDENCHI_MARU_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Pen1/Pen1_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Mugcup/Mugcup_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Teapot/Teapot_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/BaboCoin/BaboCoin_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Mugcup/Mugcup_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/YUBIWA/YUBIWA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/KOUSUI_BOTTLE/KOUSUI_BOTTLE_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Pen1/Pen1_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Denkyu/denkyu_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Daruma/Daruma_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Danberu/Danberu_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Eraser/Eraser_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Hasami/hasami_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Hotchkiss/hotchkiss_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Keitaidenwa/KEITAIDENWA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Lighter/lighter_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Matoryoshika/MATORYOSHIKA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Pen2/Pen2_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Yunomi/Yunomi_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/KANDENCHI_MARU/KANDENCHI_MARU_MASTER.geom.edge");
 
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Memory dump/Laserbeam/Laserbeam_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Memory dump/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Memory dump/Gomibako_gold/gomibako_gomibako_1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage6Dmp/Laserbeam/Laserbeam_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage6Dmp/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage6Dmp/Gomibako_gold/gomibako_gomibako_1.geom.edge");
 
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Tabaco/TABACO_notdoll_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Bat/Bat_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Soccerball/Soccerball_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Speaker/Speaker_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/INUGOYA/INUGOYA_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Oven/Oven_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Tabaco/TABACO_notdoll_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Bat/Bat_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Soccerball/Soccerball_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Speaker/Speaker_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/INUGOYA/INUGOYA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Oven/Oven_MASTER.geom.edge");
 
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/AGuitar/AGuitar_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/BaboCoin/BaboCoin_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/cake/cake_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Deckbrash/Deckbrash_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/HANGER/HANGER_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Mokusei_ISU/MOKUSEI_ISU_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/OldPC/OldPC_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/UEKI_BACHI/UEKIBACHI_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Wok/Wok_MASTER.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Woodshelf/Woodshelf_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/AGuitar/AGuitar_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/BaboCoin/BaboCoin_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/cake/cake_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Deckbrash/Deckbrash_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/HANGER/HANGER_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Mokusei_ISU/MOKUSEI_ISU_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/OldPC/OldPC_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/UEKI_BACHI/UEKIBACHI_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Wok/Wok_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Woodshelf/Woodshelf_MASTER.geom.edge");
     //
     
-    //files.push_back("D:/trash panic/reveng/Stage3_Geom.dmp/Stage3MemoryDump/TeraKane/TERA_KANE_MASTER.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage3_Geom.dmp/Stage3MemoryDump/Fuhaidama/FUHAIDAMA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/TeraKane/TERA_KANE_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Fuhaidama/FUHAIDAMA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/WoodBox/WoodBox_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Post/Post_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Toilet/Toilet_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Tire/Tire_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Coffin/coffinA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Kaiga/KAIGA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Bike/Bike_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Chero/Chero_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/WoodenHorse/WoodenHorse_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Wadaiko/wadaiko_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Suika/SUIKA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Taru/Taru_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage3Dmp/OldTv/OLDTV_MASTER.geom.edge");
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
