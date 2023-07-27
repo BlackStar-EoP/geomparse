@@ -80,27 +80,6 @@ float parsef16(uint8_t* data, uint32_t& offset)
     return ff;
 }
 
-//void parse_4_bytes(uint8_t* data)
-//{
-//    if (offset == 0x1C4)
-//        printf("");
-//    uint32_t* buf = (uint32_t*)&data[offset];
-//    uint32_t le = *buf;
-//    uint32_t be = Reverse32(le);
-//
-//    float befp = (float)be;
-//    float lefp = (float)le;
-//    float befp2 = ReverseFloat(lefp);
-//    float befp3;
-//    std::memcpy(&befp3, &be, sizeof(float));
-//
-//    printf("Offset: 0x%x, hex = 0x%08x value = %f\n", offset, le, befp3);
-//
-//    offset += 4;
-//}
-
-/*uint32_t version; uint32_t texcount; struct { char name[64]; char texfile[64]; } textures[texcount]; */
-
 struct GeomTexture
 {
     std::string name;
@@ -271,7 +250,6 @@ void parse_index_array(uint8_t* idxdata, uint32_t idxsize)
         uint16_t i3 = parse16(idxdata, offset);
         parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
     }
-    printf("");
 }
 
 struct GeomMeshHeader
@@ -408,8 +386,12 @@ struct GeomMeshHeader
         case 0x02:
             break;
         case 0x03:
+            printf("");
             break;
         case 0x04:
+            triangles.push_back(MeshTriangle(v - 1, v - 3, v - 4, nib));
+            triangles.push_back(MeshTriangle(v - 1, v - 4, v, nib));
+            printf("");
             break;
         case 0x05:
             triangles.push_back(MeshTriangle(v, v - 2, v + 1, nib));
@@ -419,7 +401,11 @@ struct GeomMeshHeader
         case 0x06:
             break;
         case 0x07:
+            triangles.push_back(MeshTriangle(v - 1, v - 2, v, nib));
+            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
+            v += 4;
             break;
+
         case 0x08:
             break;
         case 0x09:
@@ -433,27 +419,40 @@ struct GeomMeshHeader
         case 0x0D:
             triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             triangles.push_back(MeshTriangle(v + 2, v + 1, v + 3, nib));
-            v += 3;
+            //v += 3;
+            v += 4;
 
             break;
         case 0x0E:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            triangles.push_back(MeshTriangle(v + 1, v, v + 3, nib));
+            v += 3;
             break;
+
         case 0x0F:
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            v += 3;
+            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
+            v += 3;
+            printf("");
             break;
         }
 
-        int idx1 = triangles.size() - 2;
-        int idx2 = triangles.size() - 1;
+        if (triangles.size() <= parsedTriangles.size() && triangles.size() > 1)
+        {
+            int idx1 = triangles.size() - 2;
+            int idx2 = triangles.size() - 1;
 
-        //if (triangles[idx1] == parsedTriangles[idx1])
-        //    printf("");
-        //else
-        //    printf("");
+            if (triangles[idx1] == parsedTriangles[idx1])
+                printf("");
+            else
+                printf("");
 
-        //if (triangles[idx2] == parsedTriangles[idx2])
-        //    printf("");
-        //else
-        //    printf("");
+            if (triangles[idx2] == parsedTriangles[idx2])
+                printf("");
+            else
+                printf("");
+        }
 
     }
 
@@ -928,7 +927,33 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Matoryoshika/MATORYOSHIKA_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Pen2/Pen2_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/Yunomi/Yunomi_MASTER.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/KANDENCHI_MARU/KANDENCHI_MARU_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Memory dumps/KANDENCHI_MARU/KANDENCHI_MARU_MASTER.geom.edge");
+
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Memory dump/Laserbeam/Laserbeam_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Memory dump/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage6_Geom.dmp/Memory dump/Gomibako_gold/gomibako_gomibako_1.geom.edge");
+
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Tabaco/TABACO_notdoll_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Bat/Bat_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Soccerball/Soccerball_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Speaker/Speaker_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/INUGOYA/INUGOYA_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Oven/Oven_MASTER.geom.edge");
+
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/AGuitar/AGuitar_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/BaboCoin/BaboCoin_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/cake/cake_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Deckbrash/Deckbrash_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/HANGER/HANGER_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Mokusei_ISU/MOKUSEI_ISU_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/OldPC/OldPC_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/UEKI_BACHI/UEKIBACHI_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Wok/Wok_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Memory dump/Woodshelf/Woodshelf_MASTER.geom.edge");
+    //
+    
+    //files.push_back("D:/trash panic/reveng/Stage3_Geom.dmp/Stage3MemoryDump/TeraKane/TERA_KANE_MASTER.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage3_Geom.dmp/Stage3MemoryDump/Fuhaidama/FUHAIDAMA_MASTER.geom.edge");
     
     
     
