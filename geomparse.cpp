@@ -239,7 +239,41 @@ struct MeshTriangle
     }
 };
 
+struct MeshVertex
+{
+    float vx, vy, vz;
+    float tx, ty;
+    uint32_t id_;
+    MeshVertex(uint32_t id, float x, float y, float z, GeomAABB& aabb)
+        : id_(id), vx(x), vy(y), vz(z)
+    {
+        if ((vx < aabb.minX || vx > aabb.maxX))
+            isValid = false;
+        if ((vy < aabb.minY || vy > aabb.maxY))
+            isValid = false;
+        if ((vz < aabb.minZ || vz > aabb.maxZ))
+            isValid = false;
+    }
+
+    const float EPSILON = 0.00001f;
+
+    bool operator == (const MeshVertex& v) const
+    {
+        float xd = abs(vx - v.vx);
+        float yd = abs(vy - v.vy);
+        float zd = abs(vz - v.vz);
+        return (xd < EPSILON) &&
+               (yd < EPSILON) &&
+               (zd < EPSILON);
+    }
+
+    bool isValid = true;
+    std::vector<uint32_t> duplicates;
+};
+
+
 std::vector<MeshTriangle> parsedTriangles;
+std::vector<MeshVertex> parsedVertices;
 void parse_index_array(uint8_t* idxdata, uint32_t idxsize)
 {
     uint32_t offset = 0;
@@ -251,6 +285,29 @@ void parse_index_array(uint8_t* idxdata, uint32_t idxsize)
         parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
     }
 }
+
+void parse_vertex_array(uint8_t* vtxdata, uint32_t vtxsize)
+{
+    uint32_t offset = 0x6F0;
+    uint32_t id = 0u;
+    GeomAABB aabb;
+    while (offset < vtxsize)
+    {
+        float x = parsef32(vtxdata, offset);
+        float y = parsef32(vtxdata, offset);
+        float z = parsef32(vtxdata, offset);
+        float u1 = parsef32(vtxdata, offset);
+        float u2 = parsef32(vtxdata, offset);
+
+        parsedVertices.push_back(MeshVertex(id++, x, y, z, aabb));
+        //uint16_t i1 = parse16(idxdata, offset);
+        //uint16_t i2 = parse16(idxdata, offset);
+        //uint16_t i3 = parse16(idxdata, offset);
+        //parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
+    }
+    printf("");
+}
+
 
 struct GeomMeshHeader
 {
@@ -303,40 +360,10 @@ struct GeomMeshHeader
         }
     };
 
-
-    struct MeshVertex
-    {
-        float vx, vy, vz;
-        float tx, ty;
-        uint32_t id_;
-        MeshVertex(uint32_t id, float x, float y, float z, GeomAABB& aabb)
-            : id_(id), vx(x), vy(y), vz(z)
-        {
-            if ((vx < aabb.minX || vx > aabb.maxX))
-                isValid = false;
-            if ((vy < aabb.minY || vy > aabb.maxY))
-                isValid = false;
-            if ((vz < aabb.minZ || vz > aabb.maxZ))
-                isValid = false;
-        }
-
-        const float EPSILON = 0.00001f;
-
-        bool operator == (const MeshVertex& v) const
-        {
-            return (abs(vx - v.vx) < EPSILON) &&
-                   (abs(vy - v.vy) < EPSILON) &&
-                   (abs(vz - v.vz) < EPSILON);
-        }
-
-        bool isValid = true;
-        std::vector<uint32_t> duplicates;
-    };
-
     std::vector<MeshVertex> meshBlock1;
     std::vector<MeshTriangle> triangles;
 
-    void parse(GeomAABB& aabb, uint8_t* data, uint32_t offset)
+    void parse(GeomAABB& aabb, uint8_t* data, uint32_t& offset)
     {
         aabb_ = aabb;
         signature = parse32(data, offset);
@@ -732,6 +759,19 @@ struct GeomMeshHeader
 
         offset = textureBlock1Address;
         
+        int min = meshBlock1.size() > parsedVertices.size() ? meshBlock1.size() : parsedVertices.size();
+        //for (int i = 0; i < min; ++i)
+        //{
+        //    if (parsedVertices[i] == meshBlock1[1])
+        //    {
+        //    }
+        //    else
+        //    {
+        //        printf("");
+        //    }
+        //}
+
+
 
         for (uint16_t t = 0; t < (textureBlock1Length / 2 / 2); t++)
         {
@@ -777,8 +817,10 @@ struct GeomMeshHeader
          //   mat.
             uint32_t index = 1;
             for (uint32_t v = 0; v < meshBlock1.size(); ++v)
+            //for (uint32_t v = 0; v < parsedVertices.size(); ++v)
             {
                 MeshVertex& vertex = meshBlock1[v];
+                //MeshVertex& vertex = parsedVertices[v];
                 //fprintf(dmp, "# addr = %08x\n", meshBlock1[v].m_addr);
                 fprintf(dmp, "#%u ", v + 1);
 
@@ -967,7 +1009,13 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Suika/SUIKA_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Taru/Taru_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage3Dmp/OldTv/OLDTV_MASTER.geom.edge");
-    
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/RES_MDL_S_UI/tmp_base_tmp_Default.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_vs_gomibako_1.geom.edge");
+
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/PotetoStick/potetostick_MASTER.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
     
     
     
@@ -1014,7 +1062,7 @@ int main(int argc, char* argv[])
         fclose(fp);
 
 
-        std::string indexarray = path + "indexarray.idx";
+        std::string indexarray = path + "indexarray2.idx";
         //std::string indexarray = path + "gomibako_gomibako_1.geom.edge1_indexarray.idx";
         fp = fopen(indexarray.c_str(), "rb");
         fseek(fp, 0L, SEEK_END);
@@ -1024,6 +1072,17 @@ int main(int argc, char* argv[])
         fread(idxdata, 1, idxsize, fp);
         fclose(fp);
 
+        //std::string vertexarray = path + "vertex2.dmp";
+        //fp = fopen(vertexarray.c_str(), "rb");
+        //fseek(fp, 0L, SEEK_END);
+        //int vtxsize = ftell(fp);
+        //fseek(fp, 0L, SEEK_SET);
+        //uint8_t* vtxdata = new uint8_t[vtxsize];
+        //fread(vtxdata, 1, vtxsize, fp);
+        //fclose(fp);
+
+
+//        parse_vertex_array(vtxdata, vtxsize);
         parse_index_array(idxdata, idxsize);
 
         GeomMaterial m;
