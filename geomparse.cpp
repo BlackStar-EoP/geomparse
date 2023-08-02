@@ -368,8 +368,8 @@ struct NibbleAction
 
     int m_default_vertex_inc;
 };
-
-NibbleAction nibble_actions[16] =
+const uint32_t NUM_NIBBLES = 16;
+NibbleAction nibble_actions[NUM_NIBBLES] =
 {
                 // TRI 1 off      TRI 2 OFF      V INC
     NibbleAction(  0,  0,  0,     0,  0,  0,     0), // 0
@@ -390,6 +390,13 @@ NibbleAction nibble_actions[16] =
     NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // F
 };
 
+void resetAllNibbleActions()
+{
+    for (uint32_t i = 0; i < NUM_NIBBLES; ++i)
+    {
+        nibble_actions[i].ResetToDefault();
+    }
+}
 
 struct GeomMeshHeader
 {
