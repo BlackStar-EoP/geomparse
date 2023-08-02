@@ -1149,24 +1149,93 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/RES_MDL_S_UI/tmp_base_tmp_Default.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_vs_gomibako_1.geom.edge");
 
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/PotetoStick/potetostick_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
 
+    // CORRECT parsing sorted
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/BaboCoin/BaboCoin_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/BaboCoin/BaboCoin_break_break_1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/BaboCoin/BaboCoin_break_break_2.geom.edge");
 
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh2.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh3.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh4.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh5.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh6.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh7.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Denkyu/denkyu_break_denkyu_break_Mesh8.geom.edge");
 
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Eraser/Eraser_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh2.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh3.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh4.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh5.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh6.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh7.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh8.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh9.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Humberger/HUMBURGER_break_Mesh10.geom.edge");
+    
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break2.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break3.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break4.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break5.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break6.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break7.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break8.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break9.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break10.geom.edge");
+    
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Pen1/Pen1_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Pen1/Pen1_break_break1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Pen1/Pen1_break_break2.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Pen1/Pen1_break_break3.geom.edge");
+    
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/PotetoBox/potetobox_MASTER.geom.edge");
+    
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break2.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break3.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break4.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break5.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break6.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break7.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break8.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break9.geom.edge");
 
-
-
-
-
-
-
-
-
-
-
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_MASTER.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh1.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh2.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh3.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh4.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh5.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh6.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh7.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh8.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh9.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh10.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh11.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh12.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh13.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh14.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh15.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh16.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh17.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh18.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh19.geom.edge");
+    
 #endif    
 
 #ifdef MULTIPLE
