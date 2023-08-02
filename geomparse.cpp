@@ -426,6 +426,7 @@ struct GeomMeshHeader
         case 0x04:
             triangles.push_back(MeshTriangle(v - 1, v - 3, v - 4, nib));
             triangles.push_back(MeshTriangle(v - 1, v - 4, v, nib));
+            v += 2;
             printf("");
             break;
         case 0x05:
@@ -452,9 +453,9 @@ struct GeomMeshHeader
         case 0x0C:
             break;
         case 0x0D:
+            /* confirmed from the working index arrays, 1 quad from 4 vertices */
             triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             triangles.push_back(MeshTriangle(v + 2, v + 1, v + 3, nib));
-            //v += 3;
             v += 4;
 
             break;
@@ -465,11 +466,11 @@ struct GeomMeshHeader
             break;
 
         case 0x0F:
+            /* confirmed from the working index arrays, 2 hard triangles */
             triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             v += 3;
             triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             v += 3;
-            printf("");
             break;
         }
 
@@ -968,8 +969,8 @@ struct Geom
         {
             meshHeaders[i].parseBlock1(data);
             meshHeaders[i].parseFloatBlock(data);
-            meshHeaders[i].readTriangleData(data);
             meshHeaders[i].readTriangleDataFromIndexArray(m_filename, i);
+            meshHeaders[i].readTriangleData(data);
             //mesh.parseBlock1(data);
             printf("");
         }
@@ -1064,7 +1065,7 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_vs_gomibako_1.geom.edge");
 
     files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/PotetoStick/potetostick_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
 
