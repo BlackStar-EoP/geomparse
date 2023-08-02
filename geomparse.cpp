@@ -8,6 +8,24 @@
 #include <regex>
 #include "half.hpp"
 
+uint8_t* readfile(const std::string& file, int& size)
+{
+    FILE* fp = fopen(file.c_str(), "rb");
+    if (fp)
+    {
+        fseek(fp, 0L, SEEK_END);
+        size = ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
+        uint8_t* data = new uint8_t[size];
+        fread(data, 1, size, fp);
+        fclose(fp);
+        return data;
+    }
+
+    size = 0;
+    return nullptr;
+}
+
 inline uint32_t Reverse32(uint32_t value)
 {
     return (((value & 0x000000FF) << 24) |
@@ -272,19 +290,9 @@ struct MeshVertex
 };
 
 
-std::vector<MeshTriangle> parsedTriangles;
+
 std::vector<MeshVertex> parsedVertices;
-void parse_index_array(uint8_t* idxdata, uint32_t idxsize)
-{
-    uint32_t offset = 0;
-    while (offset < idxsize)
-    {
-        uint16_t i1 = parse16(idxdata, offset);
-        uint16_t i2 = parse16(idxdata, offset);
-        uint16_t i3 = parse16(idxdata, offset);
-        parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
-    }
-}
+
 
 void parse_vertex_array(uint8_t* vtxdata, uint32_t vtxsize)
 {
@@ -321,7 +329,7 @@ struct GeomMeshHeader
 
     uint32_t meshTrianglesAddress;
     uint16_t meshTrianglesSize;
-    uint8_t* triangle_data;
+    uint8_t* m_triangle_data;
 
     uint16_t padding1;
 
@@ -348,7 +356,6 @@ struct GeomMeshHeader
     std::vector<float> floatsblock1;
     std::vector<float> floatsblock2;
 
-
     struct MeshFloat
     {
         float m_val;
@@ -362,6 +369,7 @@ struct GeomMeshHeader
 
     std::vector<MeshVertex> meshBlock1;
     std::vector<MeshTriangle> triangles;
+    std::vector<MeshTriangle> parsedTriangles;
 
     void parse(GeomAABB& aabb, uint8_t* data, uint32_t& offset)
     {
@@ -701,28 +709,49 @@ struct GeomMeshHeader
 
     void readTriangleData(uint8_t* data)
     {
-        triangle_data = new uint8_t[meshTrianglesSize];
-        memcpy(triangle_data, data + meshTrianglesAddress, meshTrianglesSize);
+        m_triangle_data = new uint8_t[meshTrianglesSize];
+        memcpy(m_triangle_data, data + meshTrianglesAddress, meshTrianglesSize);
         uint32_t offset = 0;
 
-        uint16_t val1 = parse16(triangle_data, offset);
-        uint16_t val2 = parse16(triangle_data, offset);
-        uint16_t facedatastart = parse16(triangle_data, offset);
-        uint16_t val4 = parse16(triangle_data, offset);
+        uint16_t val1 = parse16(m_triangle_data, offset);
+        uint16_t val2 = parse16(m_triangle_data, offset);
+        uint16_t facedatastart = parse16(m_triangle_data, offset);
+        uint16_t val4 = parse16(m_triangle_data, offset);
 
         std::vector<uint8_t> prefacedata;
         std::vector<uint8_t> facedata;
         for (uint16_t i = 0; i < facedatastart; ++i)
         {
-            prefacedata.push_back(triangle_data[i + 8]);
+            prefacedata.push_back(m_triangle_data[i + 8]);
         }
 
         for (uint16_t i = 8 + facedatastart; i < meshTrianglesSize; ++i)
         {
-            facedata.push_back(triangle_data[i]);
+            facedata.push_back(m_triangle_data[i]);
         }
 
         writefaces(prefacedata, facedata);
+    }
+
+    void readTriangleDataFromIndexArray(const std::string& filename, int number)
+    {
+
+        std::stringstream ss;
+        ss << filename << ".idx." << number;
+
+        int idxsize;
+        uint8_t* idxdata = readfile(ss.str(), idxsize);
+        if (idxdata != nullptr)
+        {
+            uint32_t offset = 0;
+            while (offset < idxsize)
+            {
+                uint16_t i1 = parse16(idxdata, offset);
+                uint16_t i2 = parse16(idxdata, offset);
+                uint16_t i3 = parse16(idxdata, offset);
+                parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
+            }
+        }
     }
 
     void parseFloatBlock(uint8_t* data)
@@ -851,6 +880,20 @@ struct GeomMeshHeader
                 index++;
             }
 
+            for (uint16_t i = 0; i < meshTrianglesSize; ++i)
+            {
+                if ((i % 16 == 0) && (i > 0))
+                {
+                    fprintf(dmp, "\n");
+                }
+
+                uint8_t val = m_triangle_data[i];
+                fprintf(dmp, "%02X ", val);
+
+            }
+
+            fprintf(dmp, "\n");
+
             //uint32_t vertex = 3;
             //while (vertex <= meshBlock1.size())
             //{
@@ -859,11 +902,18 @@ struct GeomMeshHeader
             //}
             uint32_t n_tri = 0;
             
-            //for (MeshTriangle& tri : triangles)
-            for (MeshTriangle& tri : parsedTriangles)
+            std::vector<MeshTriangle>& tris = parsedTriangles.size() > 0 ? parsedTriangles : triangles;
+
+            int count = 0;
+            for (MeshTriangle& tri : tris)
             {
                 fprintf(dmp, "#nib = 0x0%x tri#=%u\n", tri.nibble, n_tri++);
                 fprintf(dmp, "f %s %s %s\n", tri.v1().c_str(), tri.v2().c_str(), tri.v3().c_str());
+                count++;
+                if (count % 2 == 0)
+                {
+                    fprintf(dmp, "\n");
+                }
             }
 
             fclose(dmp);
@@ -919,6 +969,7 @@ struct Geom
             meshHeaders[i].parseBlock1(data);
             meshHeaders[i].parseFloatBlock(data);
             meshHeaders[i].readTriangleData(data);
+            meshHeaders[i].readTriangleDataFromIndexArray(m_filename, i);
             //mesh.parseBlock1(data);
             printf("");
         }
@@ -993,7 +1044,7 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Wok/Wok_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage2Dmp/Woodshelf/Woodshelf_MASTER.geom.edge");
     //
-    
+
     //files.push_back("D:/trash panic/Dumps/Stage3Dmp/TeraKane/TERA_KANE_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage3Dmp/Fuhaidama/FUHAIDAMA_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage3Dmp/WoodBox/WoodBox_MASTER.geom.edge");
@@ -1012,23 +1063,23 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/RES_MDL_S_UI/tmp_base_tmp_Default.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_vs_gomibako_1.geom.edge");
 
-    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
-    //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh8.geom.edge");
+    files.push_back("D:/trash panic/Dumps/Stage1Dmp/Humberger/HUMBURGER_break_Mesh3.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/PotetoStick/potetostick_MASTER.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    //files.push_back("D:/trash panic/Dumps/Stage2Dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif    
 
@@ -1042,48 +1093,12 @@ int main(int argc, char* argv[])
             path = path.substr(0, path.find_last_of("/")) + "/";
         }
 
-        FILE* fp = fopen(file, "rb");
-        fseek(fp, 0L, SEEK_END);
-        int geomsize = ftell(fp);
-        fseek(fp, 0L, SEEK_SET);
-
-        uint8_t* data = new uint8_t[geomsize];
-        fread(data, 1, geomsize, fp);
-        fclose(fp);
-
+        int geomsize;
+        uint8_t* data = readfile(file, geomsize);
         std::string material = std::regex_replace(file, std::regex("geom.edge"), "mat.edge");
-        fp = fopen(material.c_str(), "rb");
-        fseek(fp, 0L, SEEK_END);
-        int matsize = ftell(fp);
-        fseek(fp, 0L, SEEK_SET);
 
-        uint8_t* matdata = new uint8_t[matsize];
-        fread(matdata, 1, matsize, fp);
-        fclose(fp);
-
-
-        std::string indexarray = path + "indexarray2.idx";
-        //std::string indexarray = path + "gomibako_gomibako_1.geom.edge1_indexarray.idx";
-        fp = fopen(indexarray.c_str(), "rb");
-        fseek(fp, 0L, SEEK_END);
-        int idxsize = ftell(fp);
-        fseek(fp, 0L, SEEK_SET);
-        uint8_t* idxdata = new uint8_t[idxsize];
-        fread(idxdata, 1, idxsize, fp);
-        fclose(fp);
-
-        //std::string vertexarray = path + "vertex2.dmp";
-        //fp = fopen(vertexarray.c_str(), "rb");
-        //fseek(fp, 0L, SEEK_END);
-        //int vtxsize = ftell(fp);
-        //fseek(fp, 0L, SEEK_SET);
-        //uint8_t* vtxdata = new uint8_t[vtxsize];
-        //fread(vtxdata, 1, vtxsize, fp);
-        //fclose(fp);
-
-
-//        parse_vertex_array(vtxdata, vtxsize);
-        parse_index_array(idxdata, idxsize);
+        int matsize;
+        uint8_t* matdata = readfile(material, matsize);
 
         GeomMaterial m;
         m.parse(matdata);
@@ -1099,20 +1114,4 @@ int main(int argc, char* argv[])
 #ifdef MULTIPLE
     }
 #endif
-    //while (offset < size)
-    //{
-    //    parse_4_bytes(data);
-    //}
-
 }
-
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
-
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
