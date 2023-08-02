@@ -316,6 +316,80 @@ void parse_vertex_array(uint8_t* vtxdata, uint32_t vtxsize)
     printf("");
 }
 
+struct NibbleAction
+{
+    NibbleAction(
+        int tr1_v1_inc,
+        int tr1_v2_inc,
+        int tr1_v3_inc,
+        int tr2_v1_inc,
+        int tr2_v2_inc,
+        int tr2_v3_inc,
+        int vertex_inc)
+        :
+        m_default_tr1_v1_inc(tr1_v1_inc),
+        m_default_tr1_v2_inc(tr1_v2_inc),
+        m_default_tr1_v3_inc(tr1_v3_inc),
+        m_default_tr2_v1_inc(tr2_v1_inc),
+        m_default_tr2_v2_inc(tr2_v2_inc),
+        m_default_tr2_v3_inc(tr2_v3_inc),
+        m_default_vertex_inc(vertex_inc)
+    {
+    }
+
+    void ResetToDefault()
+    {
+        m_tr1_v1_inc = m_default_tr1_v1_inc;
+        m_tr1_v2_inc = m_default_tr1_v2_inc;
+        m_tr1_v3_inc = m_default_tr1_v3_inc;
+        m_tr2_v1_inc = m_default_tr2_v1_inc;
+        m_tr2_v2_inc = m_default_tr2_v2_inc;
+        m_tr2_v3_inc = m_default_tr2_v3_inc;
+        m_vertex_inc = m_default_vertex_inc;
+    }
+
+    int m_tr1_v1_inc;
+    int m_tr1_v2_inc;
+    int m_tr1_v3_inc;
+
+    int m_tr2_v1_inc;
+    int m_tr2_v2_inc;
+    int m_tr2_v3_inc;
+
+    int m_vertex_inc;
+
+    int m_default_tr1_v1_inc;
+    int m_default_tr1_v2_inc;
+    int m_default_tr1_v3_inc;
+
+    int m_default_tr2_v1_inc;
+    int m_default_tr2_v2_inc;
+    int m_default_tr2_v3_inc;
+
+    int m_default_vertex_inc;
+};
+
+NibbleAction nibble_actions[16] =
+{
+                // TRI 1 off      TRI 2 OFF      V INC
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0), // 0
+    NibbleAction( -1,  0,  1,     1,  0,  2,     2),   // 1
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 2
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 3
+    NibbleAction( -1, -3,  0,    -1,  0,  1,     2),   // 4
+    NibbleAction(  0, -2,  1,     1, -2,  2,     3),   // 5
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 6
+    NibbleAction( -1, -2,  0,     1,  2,  3,     4),   // 7
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 8
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 9
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // A
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // B
+    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // C
+    NibbleAction(  0,  1,  2,     3,  1,  3,     4),   // D
+    NibbleAction(  0,  1,  2,     1,  0,  3,     3),   // E
+    NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // F
+};
+
 
 struct GeomMeshHeader
 {
@@ -407,6 +481,8 @@ struct GeomMeshHeader
         }
     }
 
+    int nib4sub = 3;
+
     void parsenib2(uint8_t nib, uint8_t prevnib, uint32_t& v)
     {
         switch (nib)
@@ -424,9 +500,10 @@ struct GeomMeshHeader
             printf("");
             break;
         case 0x04:
-            triangles.push_back(MeshTriangle(v - 1, v - 3, v - 4, nib));
-            triangles.push_back(MeshTriangle(v - 1, v - 4, v, nib));
+            triangles.push_back(MeshTriangle(v - 1, v - nib4sub, v, nib));
+            triangles.push_back(MeshTriangle(v - 1, v    , v + 1, nib));
             v += 2;
+            nib4sub = 2;
             printf("");
             break;
         case 0x05:
@@ -462,6 +539,7 @@ struct GeomMeshHeader
         case 0x0E:
             triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
             triangles.push_back(MeshTriangle(v + 1, v, v + 3, nib));
+            nib4sub = 3;
             v += 3;
             break;
 
