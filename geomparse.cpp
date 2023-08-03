@@ -1406,32 +1406,31 @@ int main(int argc, char* argv[])
 
 
     // Contains nibbles other than F and D
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_BIG/MONOLITH_BIG_break_break_10.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_BIG/MONOLITH_BIG_break_break_2.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BIG_break_break_10.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BIG_break_break_2.geom.edge");
 
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_BOX/MONOLITH_BOX_break_break_1.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_BOX/MONOLITH_BOX_break_break_12.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX_break_break_1.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX_break_break_12.geom.edge");
 
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_BOX2/MONOLITH_BOX_break_break_1.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_BOX2/MONOLITH_BOX_break_break_12.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX2_break_break_1.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX2_break_break_12.geom.edge");
 
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_break_break_1.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_break_break_2.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_break_break_3.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_break_break_4.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_break_break_5.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_break_break_6.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_break_break_7.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_L/MONOLITH_L_MASTER.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_1.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_2.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_3.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_4.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_5.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_6.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_7.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_MASTER.geom.edge");
 
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_LG/MONOLITH_LG_break_break_3.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_LG/MONOLITH_LG_break_break_4.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_LG/MONOLITH_LG_break_break_5.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_LG/MONOLITH_LG_break_break_7.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_LG/MONOLITH_LG_MASTER.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_3.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_4.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_5.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_7.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_MASTER.geom.edge");
 
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/MONOLITH_T/MONOLITH_T_MASTER.geom.edge");
-
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_T_MASTER.geom.edge");
 #endif    
 
 #ifdef MULTIPLE
