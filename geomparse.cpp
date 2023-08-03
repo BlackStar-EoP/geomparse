@@ -1,6 +1,3 @@
-// geomparse.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
-
 #include <iostream>
 #include <vector>
 #include <assert.h>
@@ -224,36 +221,36 @@ struct GeomAABB
 
 struct MeshTriangle
 {
-    uint32_t v1_, v2_, v3_;
+    uint32_t t_, tt_, ttt_;
     uint8_t nibble;
     MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3, uint8_t nibbleval)
-        : v1_(v1), v2_(v2), v3_(v3), nibble(nibbleval)
+        : t_(v1), tt_(v2), ttt_(v3), nibble(nibbleval)
     {}
 
     std::string v1()
     {
         std::stringstream ss;
-        ss << (v1_ + 1) << "/" << (v1_ + 1);
+        ss << (t_ + 1) << "/" << (t_ + 1);
         return ss.str();
     }
     std::string v2()
     {
         std::stringstream ss;
-        ss << (v2_ + 1) << "/" << (v2_ + 1);
+        ss << (tt_ + 1) << "/" << (tt_ + 1);
         return ss.str();
     }
     std::string v3()
     {
         std::stringstream ss;
-        ss << (v3_ + 1) << "/" << (v3_ + 1);
+        ss << (ttt_ + 1) << "/" << (ttt_ + 1);
         return ss.str();
     }
 
     bool operator == (const MeshTriangle& t2) const
     {
-        return (v1_ == t2.v1_) &&
-               (v2_ == t2.v2_) &&
-               (v3_ == t2.v3_);
+        return (t_ == t2.t_) &&
+               (tt_ == t2.tt_) &&
+               (ttt_ == t2.ttt_);
     }
 };
 
@@ -335,6 +332,7 @@ struct NibbleAction
         m_default_tr2_v3_inc(tr2_v3_inc),
         m_default_vertex_inc(vertex_inc)
     {
+        ResetToDefault();
     }
 
     void ResetToDefault()
@@ -346,6 +344,25 @@ struct NibbleAction
         m_tr2_v2_inc = m_default_tr2_v2_inc;
         m_tr2_v3_inc = m_default_tr2_v3_inc;
         m_vertex_inc = m_default_vertex_inc;
+    }
+
+    void SetTri1(int tr1_v1_inc,
+                 int tr1_v2_inc,
+                 int tr1_v3_inc)
+    {
+        m_tr1_v1_inc = tr1_v1_inc;
+        m_tr1_v2_inc = tr1_v2_inc;
+        m_tr1_v3_inc = tr1_v3_inc;
+    }
+
+
+    void SetTri2(int tr2_v1_inc,
+                 int tr2_v2_inc,
+                 int tr2_v3_inc)
+    {
+        m_tr2_v1_inc = tr2_v1_inc;
+        m_tr2_v2_inc = tr2_v2_inc;
+        m_tr2_v3_inc = tr2_v3_inc;
     }
 
     int m_tr1_v1_inc;
@@ -486,6 +503,76 @@ struct GeomMeshHeader
         {
             offsets[i] = parse32(data, offset);
         }
+    }
+
+    void add_tris(const NibbleAction& action, uint32_t& v, uint8_t nib)
+    {
+        triangles.push_back(MeshTriangle(v + action.m_tr1_v1_inc, v + action.m_tr1_v2_inc, v + action.m_tr1_v3_inc, nib));
+        triangles.push_back(MeshTriangle(v + action.m_tr2_v1_inc, v + action.m_tr2_v2_inc, v + action.m_tr2_v3_inc, nib));
+        v += action.m_vertex_inc;
+    }
+
+    void parsenib3(uint8_t nib, uint8_t prevnib, uint8_t nextnib, uint32_t& v)
+    {
+        NibbleAction& action = nibble_actions[nib];
+        switch (nib)
+        {
+        case 0x00:
+            break;
+        case 0x01:
+            add_tris(action, v, nib);
+            action.ResetToDefault();
+            break;
+        case 0x02:
+            break;
+        case 0x03:
+            break;
+        case 0x04:
+            break;
+        case 0x05:
+            break;
+        case 0x06:
+            break;
+        case 0x07:
+            break;
+        case 0x08:
+            break;
+        case 0x09:
+            break;
+        case 0x0A:
+            break;
+        case 0x0B:
+            break;
+        case 0x0C:
+            break;
+        case 0x0D:
+            add_tris(action, v, nib);
+            break;
+        case 0x0E:
+            add_tris(action, v, nib);
+            nibble_actions[0x1].SetTri1(-2, 0, 1);
+            nibble_actions[0x1].SetTri2(1, 0, 2);
+            break;
+        case 0x0F:
+            break;
+        }
+
+        if (triangles.size() <= parsedTriangles.size() && triangles.size() > 1)
+        {
+            int idx1 = triangles.size() - 2;
+            int idx2 = triangles.size() - 1;
+
+            if (triangles[idx1] == parsedTriangles[idx1])
+                printf("");
+            else
+                printf("");
+
+            if (triangles[idx2] == parsedTriangles[idx2])
+                printf("");
+            else
+                printf("");
+        }
+
     }
 
     int nib4sub = 3;
@@ -786,9 +873,10 @@ struct GeomMeshHeader
         {
             uint8_t nib1 = (face >> 4) & 0x0F;
             uint8_t nib2 = face & 0x0F;
-            parsenib2(nib1, prevnib, v);
+            uint8_t nextnib = 0u;
+            parsenib3(nib1, prevnib, nextnib, v);
             prevnib = nib1;
-            parsenib2(nib2, prevnib, v);
+            parsenib3(nib2, prevnib, nextnib, v);
             prevnib = nib2;
         }
     }
@@ -1084,6 +1172,7 @@ int main(int argc, char* argv[])
         return -1;
     const char* file = argv[1];
 #else
+#define DECODE_ONLY
 #define MULTIPLE
     std::vector<const char*> files;
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Pen1/Pen1_MASTER.geom.edge");
@@ -1214,27 +1303,30 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break8.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Yunomi/Yunomi_break_break9.geom.edge");
 
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_MASTER.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh1.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh2.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh3.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh4.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh5.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh6.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh7.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh8.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh9.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh10.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh11.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh12.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh13.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh14.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh15.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh1.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh2.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh3.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh4.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh5.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh6.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh7.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh8.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh9.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh10.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh11.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh12.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh13.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh14.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh15.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh16.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh17.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh18.geom.edge");
+    //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh19.geom.edge");
+
+    // Decoden: KOUSUI_BOTTLE_break_Mesh16, 13, 3
     files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh16.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh17.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh18.geom.edge");
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/KOUSUI_BOTTLE/KOUSUI_BOTTLE_break_Mesh19.geom.edge");
     
 #endif    
 
@@ -1264,7 +1356,9 @@ int main(int argc, char* argv[])
         g.parse(data);
         g.parseMeshHeaders(data);
         g.parseMesh(data);
+#ifndef DECODE_ONLY
         g.dump_meshes();
+#endif
 
 #ifdef MULTIPLE
     }
