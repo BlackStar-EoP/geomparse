@@ -401,7 +401,7 @@ NibbleAction nibble_actions[NUM_NIBBLES] =
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 9
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // A
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // B
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // C
+    NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // C
     NibbleAction(  0,  1,  2,     2,  1,  3,     4),   // D
     NibbleAction(  0,  1,  2,     1,  0,  3,     3),   // E
     NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // F
@@ -528,12 +528,14 @@ struct GeomMeshHeader
         case 0x03:
             break;
         case 0x04:
+            add_tris(action, v, nib);
             break;
         case 0x05:
             break;
         case 0x06:
             break;
         case 0x07:
+            add_tris(action, v, nib);
             break;
         case 0x08:
             break;
@@ -544,6 +546,11 @@ struct GeomMeshHeader
         case 0x0B:
             break;
         case 0x0C:
+            add_tris(action, v, nib);
+            add_tris(action, v, nib);
+            add_tris(action, v, nib);
+            add_tris(action, v, nib);
+            add_tris(action, v, nib);
             break;
         case 0x0D:
             add_tris(action, v, nib);
@@ -554,6 +561,7 @@ struct GeomMeshHeader
             nibble_actions[0x1].SetTri2(1, 0, 2);
             break;
         case 0x0F:
+            add_tris(action, v, nib);
             break;
         }
 
@@ -879,6 +887,8 @@ struct GeomMeshHeader
             parsenib3(nib2, prevnib, nextnib, v);
             prevnib = nib2;
         }
+
+        printf("");
     }
 
     void readTriangleData(uint8_t* data)
@@ -925,6 +935,47 @@ struct GeomMeshHeader
                 uint16_t i3 = parse16(idxdata, offset);
                 parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
             }
+        }
+        if (parsedTriangles.size() % 2 == 0)
+        {
+            for (uint32_t i = 0; i < parsedTriangles.size() - 1; i += 2)
+            {
+                MeshTriangle& t1 = parsedTriangles[i];
+                MeshTriangle& t2 = parsedTriangles[i + 1];
+
+                for (int nib = 0xF; nib >= 0; --nib)
+                {
+                    uint32_t t1v1 = t1.t_;
+                    uint32_t t1v2 = t1.tt_;
+                    uint32_t t1v3 = t1.ttt_;
+
+                    uint32_t t2v1 = t2.t_;
+                    uint32_t t2v2 = t2.tt_;
+                    uint32_t t2v3 = t2.ttt_;
+
+                    NibbleAction a = nibble_actions[nib];
+                    
+                    t1v1 -= a.m_tr1_v1_inc;
+                    t1v2 -= a.m_tr1_v2_inc;
+                    t1v3 -= a.m_tr1_v3_inc;
+                    t2v1 -= a.m_tr2_v1_inc;
+                    t2v2 -= a.m_tr2_v2_inc;
+                    t2v3 -= a.m_tr2_v3_inc;
+
+                    uint32_t sum = t1v1 + t1v2 + t1v3 + t2v1 + t2v2 + t2v3;
+                    if (sum == 6 * t1v1)
+                    {
+                        t1.nibble = nib;
+                        t2.nibble = nib;
+                        break;
+                    }
+
+                }
+            }
+        }
+        else
+        {
+            printf("");
         }
     }
 
@@ -1172,8 +1223,6 @@ int main(int argc, char* argv[])
         return -1;
     const char* file = argv[1];
 #else
-#define DECODE_ONLY
-#define MULTIPLE
     std::vector<const char*> files;
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Pen1/Pen1_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Mugcup/Mugcup_MASTER.geom.edge");
@@ -1406,32 +1455,36 @@ int main(int argc, char* argv[])
 
 
     // Contains nibbles other than F and D
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BIG_break_break_10.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BIG_break_break_2.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BIG_break_break_10.geom.edge"); // 4
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BIG_break_break_2.geom.edge"); // C
 
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX_break_break_1.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX_break_break_12.geom.edge");
-
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX2_break_break_1.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX2_break_break_12.geom.edge");
-
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_1.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_2.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_3.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_4.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_5.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_6.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_7.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_MASTER.geom.edge");
-
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_3.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_4.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_5.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_7.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_MASTER.geom.edge");
-
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX_break_break_1.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX_break_break_12.geom.edge");
+//
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX2_break_break_1.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_BOX2_break_break_12.geom.edge");
+//
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_1.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_2.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_3.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_4.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_5.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_6.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_break_break_7.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_L_MASTER.geom.edge");
+//
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_3.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_4.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_5.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_7.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_MASTER.geom.edge");
+//
 files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_T_MASTER.geom.edge");
 #endif    
+
+//#define DECODE_ONLY
+#define MULTIPLE
+
 
 #ifdef MULTIPLE
     for (const char* file : files)
