@@ -512,7 +512,7 @@ struct GeomMeshHeader
         v += action.m_vertex_inc;
     }
 
-    void parsenib3(uint8_t nib, uint8_t prevnib, uint8_t nextnib, uint32_t& v)
+    bool parsenib3(uint8_t nib, uint8_t prevnib, uint8_t nextnib, uint32_t& v)
     {
         NibbleAction& action = nibble_actions[nib];
         switch (nib)
@@ -535,6 +535,7 @@ struct GeomMeshHeader
         case 0x06:
             break;
         case 0x07:
+            return false;
             add_tris(action, v, nib);
             break;
         case 0x08:
@@ -580,7 +581,7 @@ struct GeomMeshHeader
             else
                 printf("");
         }
-
+        return true;
     }
 
     int nib4sub = 3;
@@ -882,9 +883,9 @@ struct GeomMeshHeader
             uint8_t nib1 = (face >> 4) & 0x0F;
             uint8_t nib2 = face & 0x0F;
             uint8_t nextnib = 0u;
-            parsenib3(nib1, prevnib, nextnib, v);
+            if (!parsenib3(nib1, prevnib, nextnib, v)) break;
             prevnib = nib1;
-            parsenib3(nib2, prevnib, nextnib, v);
+            if (!parsenib3(nib2, prevnib, nextnib, v)) break;
             prevnib = nib2;
         }
 
@@ -1126,7 +1127,7 @@ struct GeomMeshHeader
             //    vertex+=3;
             //}
             uint32_t n_tri = 0;
-            
+
             std::vector<MeshTriangle>& tris = parsedTriangles.size() > 0 ? parsedTriangles : triangles;
 
             int count = 0;
@@ -1186,14 +1187,15 @@ struct Geom
         }
     }
 
-    void parseMesh(uint8_t* data)
+    void parseMesh(uint8_t* data, bool readIdx)
     {
         for (int i = 0; i < meshHeaders.size(); ++i)
         //for (auto& mesh : meshHeaders)
         {
             meshHeaders[i].parseBlock1(data);
             meshHeaders[i].parseFloatBlock(data);
-            meshHeaders[i].readTriangleDataFromIndexArray(m_filename, i);
+            if (readIdx)
+                meshHeaders[i].readTriangleDataFromIndexArray(m_filename, i);
             meshHeaders[i].readTriangleData(data);
             //mesh.parseBlock1(data);
             printf("");
@@ -1479,7 +1481,9 @@ int main(int argc, char* argv[])
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_break_break_7.geom.edge");
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_MASTER.geom.edge");
 //
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_T_MASTER.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_T_MASTER.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Speaker/Speaker_MASTER.geom.edge");
+
 #endif    
 
 //#define DECODE_ONLY
@@ -1511,7 +1515,9 @@ files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH
         Geom g(file, geomsize);
         g.parse(data);
         g.parseMeshHeaders(data);
-        g.parseMesh(data);
+        bool readIdx = false;
+        
+        g.parseMesh(data, readIdx);
 #ifndef DECODE_ONLY
         g.dump_meshes();
 #endif
