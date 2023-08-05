@@ -4,6 +4,7 @@
 #include <sstream>
 #include <regex>
 #include "half.hpp"
+#include <fstream>
 
 uint8_t* readfile(const std::string& file, int& size)
 {
@@ -400,7 +401,7 @@ NibbleAction nibble_actions[NUM_NIBBLES] =
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 8
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 9
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // A
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // B
+    NibbleAction(  0,  0,  0,     0,  0,  0,     4),   // B
     NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // C
     NibbleAction(  0,  1,  2,     2,  1,  3,     4),   // D
     NibbleAction(  0,  1,  2,     1,  0,  3,     3),   // E
@@ -545,6 +546,7 @@ struct GeomMeshHeader
         case 0x0A:
             break;
         case 0x0B:
+            add_tris(action, v, nib);
             break;
         case 0x0C:
             add_tris(action, v, nib);
@@ -874,11 +876,11 @@ struct GeomMeshHeader
         }
     }
 
-    void writefaces(std::vector<uint8_t>& prefacedata, std::vector<uint8_t>& facedata)
+    void writefaces()
     {
         uint32_t v = 0u;
         uint8_t prevnib = 0u;
-        for (uint8_t face : facedata)
+        for (uint8_t face : m_facedata)
         {
             uint8_t nib1 = (face >> 4) & 0x0F;
             uint8_t nib2 = face & 0x0F;
@@ -892,6 +894,9 @@ struct GeomMeshHeader
         printf("");
     }
 
+    std::vector<uint8_t> m_prefacedata;
+    std::vector<uint8_t> m_facedata;
+
     void readTriangleData(uint8_t* data)
     {
         m_triangle_data = new uint8_t[meshTrianglesSize];
@@ -903,19 +908,38 @@ struct GeomMeshHeader
         uint16_t facedatastart = parse16(m_triangle_data, offset);
         uint16_t val4 = parse16(m_triangle_data, offset);
 
-        std::vector<uint8_t> prefacedata;
-        std::vector<uint8_t> facedata;
         for (uint16_t i = 0; i < facedatastart; ++i)
         {
-            prefacedata.push_back(m_triangle_data[i + 8]);
+            m_prefacedata.push_back(m_triangle_data[i + 8]);
         }
 
         for (uint16_t i = 8 + facedatastart; i < meshTrianglesSize; ++i)
         {
-            facedata.push_back(m_triangle_data[i]);
+            m_facedata.push_back(m_triangle_data[i]);
+        }
+    }
+
+    bool isPreFaceDataEmpty()
+    {
+        for (uint8_t byte : m_prefacedata)
+        {
+            if (byte != 0)
+                return false;
         }
 
-        writefaces(prefacedata, facedata);
+        return true;
+    }
+
+    bool faceDataContainsNibble(uint8_t nibble)
+    {
+        for (uint8_t byte : m_facedata)
+        {
+            uint8_t nib1 = byte & 0x0F;
+            uint8_t nib2 = byte >> 4;
+            if (nib1 == nibble || nib2 == nibble)
+                return true;
+        }
+        return false;
     }
 
     void readTriangleDataFromIndexArray(const std::string& filename, int number)
@@ -1187,6 +1211,38 @@ struct Geom
         }
     }
 
+    bool faceDataContainsNibble(uint8_t nibble)
+    {
+        if (meshHeaders.size() > 1)
+            return false;
+
+        for (int i = 0; i < meshHeaders.size(); ++i)
+        {
+            if (meshHeaders[i].faceDataContainsNibble(nibble))
+                return true;
+        }
+        return false;
+    }
+
+    void readTriangleData(uint8_t* data)
+    {
+        for (int i = 0; i < meshHeaders.size(); ++i)
+        {
+            meshHeaders[i].readTriangleData(data);
+        }
+    }
+
+    bool hasEmptyPreFaceData()
+    {
+        for (int i = 0; i < meshHeaders.size(); ++i)
+        {
+            if (meshHeaders[i].isPreFaceDataEmpty())
+                return true;
+        }
+
+        return false;
+    }
+
     void parseMesh(uint8_t* data, bool readIdx)
     {
         for (int i = 0; i < meshHeaders.size(); ++i)
@@ -1197,6 +1253,7 @@ struct Geom
             if (readIdx)
                 meshHeaders[i].readTriangleDataFromIndexArray(m_filename, i);
             meshHeaders[i].readTriangleData(data);
+            meshHeaders[i].writefaces();
             //mesh.parseBlock1(data);
             printf("");
         }
@@ -1225,7 +1282,7 @@ int main(int argc, char* argv[])
         return -1;
     const char* file = argv[1];
 #else
-    std::vector<const char*> files;
+    std::vector<std::string> files;
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Pen1/Pen1_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/Mugcup/Mugcup_MASTER.geom.edge");
     //files.push_back("D:/trash panic/Dumps/Stage1Dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
@@ -1482,16 +1539,97 @@ int main(int argc, char* argv[])
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_LG_MASTER.geom.edge");
 //
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_T_MASTER.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Speaker/Speaker_MASTER.geom.edge");
-
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Speaker/Speaker_MASTER.geom.edge");
+files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
 #endif    
 
 //#define DECODE_ONLY
 #define MULTIPLE
+//#define SCAN
 
 
+#ifdef SCAN
+files.clear();
+   // Create the file object (input)
+std::ifstream infile("allWithout.txt");
+
+// Temporary buffer
+std::string temp;
+
+// Get the input from the input file until EOF
+while (std::getline(infile, temp)) {
+    // Add to the list of output strings
+    files.push_back(temp);
+}
+
+std::vector<std::vector<std::string>> meshesPerNibble;
+
+for (uint32_t i = 0; i < NUM_NIBBLES; ++i)
+{
+    meshesPerNibble.push_back(std::vector<std::string>());
+}
+
+std::vector<std::string> meshesWithoutPrefaceData;
+for (const std::string& file : files)
+{
+    int geomsize;
+    uint8_t* data = readfile(file, geomsize);
+    Geom g(file, geomsize);
+    g.parse(data);
+    g.parseMeshHeaders(data);
+    g.readTriangleData(data);
+
+    if (geomsize > 10000)
+    {
+        delete[] data;
+        continue;
+    }
+
+    for (uint32_t i = 0; i < NUM_NIBBLES; ++i)
+    {
+        if (g.faceDataContainsNibble(i))
+        {
+            meshesPerNibble[i].push_back(file);
+        }
+    }
+
+    //if (g.hasEmptyPreFaceData())
+    //{
+    //    meshesWithoutPrefaceData.push_back(file);
+    //}
+    //else
+    //{
+    //    printf("");
+    //}
+}
+
+//printf("");
+//FILE* fp = fopen("allWithout.txt", "w+");
+//for (const std::string& file : meshesWithoutPrefaceData)
+//{
+//    fprintf(fp, "%s\n", file.c_str());
+//}
+//fclose(fp);
+//printf("");
+
+for (uint32_t nib = 0; nib < NUM_NIBBLES; ++nib)
+{
+    std::stringstream s;
+    s << "nib" << "_" << nib << ".txt";
+    FILE* fp = fopen(s.str().c_str(), "w+");
+    for (const std::string& file : meshesPerNibble[nib])
+    {
+        fprintf(fp, "%s\n", file.c_str());
+    }
+    fclose(fp);
+
+}
+
+printf("");
+
+#else
 #ifdef MULTIPLE
-    for (const char* file : files)
+    for (const std::string& file: files)
     {
 #endif
         std::string path = file;
@@ -1525,4 +1663,5 @@ files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Speaker/Speaker_MASTER.g
 #ifdef MULTIPLE
     }
 #endif
+#endif 
 }
