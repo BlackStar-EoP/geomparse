@@ -392,7 +392,7 @@ NibbleAction nibble_actions[NUM_NIBBLES] =
     NibbleAction(  0,  0,  0,     0,  0,  0,     0), // 0
     NibbleAction( -1,  0,  1,     1,  0,  2,     2),   // 1
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 2
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 3
+    NibbleAction( -3, -1,  0,     1,  2,  3,     4),   // 3
     NibbleAction( -1, -3,  0,    -1,  0,  1,     2),   // 4
     NibbleAction(  0, -2,  1,     1, -2,  2,     3),   // 5
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 6
@@ -526,6 +526,7 @@ struct GeomMeshHeader
         case 0x02:
             break;
         case 0x03:
+            add_tris(action, v, nib);
             break;
         case 0x04:
             add_tris(action, v, nib);
@@ -535,7 +536,6 @@ struct GeomMeshHeader
         case 0x06:
             break;
         case 0x07:
-            return false;
             add_tris(action, v, nib);
             break;
         case 0x08:
