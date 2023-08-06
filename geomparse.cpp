@@ -366,6 +366,11 @@ struct NibbleAction
         m_tr2_v3_inc = tr2_v3_inc;
     }
 
+    void SetVertexInc(int vertexInc)
+    {
+        m_vertex_inc = vertexInc;
+    }
+
     int m_tr1_v1_inc;
     int m_tr1_v2_inc;
     int m_tr1_v3_inc;
@@ -401,7 +406,7 @@ NibbleAction nibble_actions[NUM_NIBBLES] =
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 8
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 9
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // A
-    NibbleAction(  0,  0,  0,     0,  0,  0,     4),   // B
+    NibbleAction( -2, -3,  0,     1,  2,  3,     4),   // B
     NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // C
     NibbleAction(  0,  1,  2,     2,  1,  3,     4),   // D
     NibbleAction(  0,  1,  2,     1,  0,  3,     3),   // E
@@ -538,6 +543,7 @@ struct GeomMeshHeader
             break;
         case 0x07:
             add_tris(action, v, nib);
+            action.ResetToDefault();
             break;
         case 0x08:
             break;
@@ -562,6 +568,12 @@ struct GeomMeshHeader
             add_tris(action, v, nib);
             nibble_actions[0x1].SetTri1(-2, 0, 1);
             nibble_actions[0x1].SetTri2(1, 0, 2);
+
+
+            //KEITAIDENWA_break_Mesh01.geom.edge
+            nibble_actions[0x7].SetTri1(0, -3, 1);
+            nibble_actions[0x7].SetTri2(2, 3, 4);
+            nibble_actions[0x7].SetVertexInc(5);
             break;
         case 0x0F:
             add_tris(action, v, nib);
@@ -1540,7 +1552,8 @@ int main(int argc, char* argv[])
 //
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_T_MASTER.geom.edge");
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Speaker/Speaker_MASTER.geom.edge");
-files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
+//files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
 #endif    
 
 //#define DECODE_ONLY
