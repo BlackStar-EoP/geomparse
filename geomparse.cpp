@@ -549,6 +549,9 @@ struct GeomMeshHeader
             break;
         case 0x09:
             add_tris(action, v, nib);
+            nibble_actions[0x1].SetTri1(0, 1, 2);
+            nibble_actions[0x1].SetTri2(2, 1, 3);
+            nibble_actions[0x1].SetVertexInc(4);
             break;
         case 0x0A:
             break;
@@ -577,11 +580,12 @@ struct GeomMeshHeader
             add_tris(action, v, nib);
             nibble_actions[0x1].SetTri1(-2, 0, 1);
             nibble_actions[0x1].SetTri2(1, 0, 2);
-
+            nibble_actions[0x7].SetVertexInc(5);
 
             break;
         case 0x0F:
             add_tris(action, v, nib);
+
             break;
         }
 
