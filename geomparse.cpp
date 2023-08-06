@@ -527,7 +527,7 @@ struct GeomMeshHeader
             break;
         case 0x01:
             add_tris(action, v, nib);
-            action.ResetToDefault();
+            //action.ResetToDefault();
             break;
         case 0x02:
             break;
@@ -563,6 +563,9 @@ struct GeomMeshHeader
             break;
         case 0x0D:
             add_tris(action, v, nib);
+
+            nibble_actions[0x1].SetTri1(-2, -1, 0);
+            nibble_actions[0x1].SetTri2(0, -1, 1);
             break;
         case 0x0E:
             add_tris(action, v, nib);
@@ -1553,7 +1556,8 @@ int main(int argc, char* argv[])
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Monolith_sorted/MONOLITH_T_MASTER.geom.edge");
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Speaker/Speaker_MASTER.geom.edge");
 //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break3.geom.edge");
 #endif    
 
 //#define DECODE_ONLY
@@ -1666,7 +1670,7 @@ printf("");
         Geom g(file, geomsize);
         g.parse(data);
         g.parseMeshHeaders(data);
-        bool readIdx = false;
+        bool readIdx = true;
         
         g.parseMesh(data, readIdx);
 #ifndef DECODE_ONLY
