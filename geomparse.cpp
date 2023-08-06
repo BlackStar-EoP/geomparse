@@ -404,7 +404,7 @@ NibbleAction nibble_actions[NUM_NIBBLES] =
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 6
     NibbleAction( -1, -2,  0,     1,  2,  3,     4),   // 7
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 8
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 9
+    NibbleAction( -2, -3,  0,     0, -3,  1,     0),   // 9
     NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // A
     NibbleAction( -2, -3,  0,     1,  2,  3,     4),   // B
     NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // C
@@ -548,11 +548,17 @@ struct GeomMeshHeader
         case 0x08:
             break;
         case 0x09:
+            add_tris(action, v, nib);
             break;
         case 0x0A:
             break;
         case 0x0B:
             add_tris(action, v, nib);
+            //KEITAIDENWA_break_Mesh01.geom.edge
+            nibble_actions[0x7].SetTri1(0, -3, 1);
+            nibble_actions[0x7].SetTri2(2, 3, 4);
+            nibble_actions[0x7].SetVertexInc(5);
+
             break;
         case 0x0C:
             add_tris(action, v, nib);
@@ -573,10 +579,6 @@ struct GeomMeshHeader
             nibble_actions[0x1].SetTri2(1, 0, 2);
 
 
-            //KEITAIDENWA_break_Mesh01.geom.edge
-            nibble_actions[0x7].SetTri1(0, -3, 1);
-            nibble_actions[0x7].SetTri2(2, 3, 4);
-            nibble_actions[0x7].SetVertexInc(5);
             break;
         case 0x0F:
             add_tris(action, v, nib);
@@ -1557,7 +1559,9 @@ int main(int argc, char* argv[])
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Speaker/Speaker_MASTER.geom.edge");
 //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break3.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break3.geom.edge");
+files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/GBC/GBC_break_Mesh4.geom.edge");
+
 #endif    
 
 //#define DECODE_ONLY
