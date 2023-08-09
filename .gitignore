@@ -6,3 +6,5 @@ x64
 *.mtl
 *.obj
 *.txt
+Debug/
+Release/

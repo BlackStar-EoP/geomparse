@@ -6,6 +6,22 @@
 #include "half.hpp"
 #include <fstream>
 
+inline uint32_t Reverse32(uint32_t value)
+{
+    return (((value & 0x000000FF) << 24) |
+        ((value & 0x0000FF00) << 8) |
+        ((value & 0x00FF0000) >> 8) |
+        ((value & 0xFF000000) >> 24));
+}
+
+inline uint16_t Reverse16(uint16_t value)
+{
+    return (((value & 0x00FF) << 8) |
+        ((value & 0xFF00) >> 8));
+}
+
+
+
 uint8_t* readfile(const std::string& file, int& size)
 {
     FILE* fp = fopen(file.c_str(), "rb");
@@ -22,20 +38,6 @@ uint8_t* readfile(const std::string& file, int& size)
 
     size = 0;
     return nullptr;
-}
-
-inline uint32_t Reverse32(uint32_t value)
-{
-    return (((value & 0x000000FF) << 24) |
-        ((value & 0x0000FF00) << 8) |
-        ((value & 0x00FF0000) >> 8) |
-        ((value & 0xFF000000) >> 24));
-}
-
-inline uint16_t Reverse16(uint16_t value)
-{
-    return (((value & 0x00FF) << 8) |
-             ((value & 0xFF00) >> 8));
 }
 
 float ReverseFloat(const float inFloat)
@@ -123,28 +125,6 @@ struct GeomMaterialEntry
 
     void dumpMaterial(const std::string& path)
     {
-        /*
-        newmtl Wood
-            Ka 1.000000 1.000000 1.000000
-            Kd 0.640000 0.640000 0.640000
-            Ks 0.500000 0.500000 0.500000
-            Ns 96.078431
-            Ni 1.000000
-            d 1.000000
-            illum 0
-            map_Kd woodtexture.jpg
-
-            The example uses the following keywords :
-
-    Ka: specifies ambient color, to account for light that is scattered about the entire scene[see Wikipedia entry for Phong Reflection Model] using values between 0 and 1 for the RGB components.
-        Kd : specifies diffuse color, which typically contributes most of the color to an object[see Wikipedia entry for Diffuse Reflection].In this example, Kd represents a grey color, which will get modified by a colored texture map specified in the map_Kd statement
-        Ks : specifies specular color, the color seen where the surface is shinyand mirror - like[see Wikipedia entry for Specular Reflection].
-        Ns : defines the focus of specular highlights in the material.Ns values normally range from 0 to 1000, with a high value resulting in a tight, concentrated highlight.
-        Ni : defines the optical density(aka index of refraction) in the current material.The values can range from 0.001 to 10. A value of 1.0 means that light does not bend as it passes through an object.
-        d : specifies a factor for dissolve, how much this material dissolves into the background.A factor of 1.0 is fully opaque.A factor of 0.0 is completely transparent.
-        illum : specifies an illumination model, using a numeric value.See Notes below for more detail on the illum keyword.The value 0 represents the simplest illumination model, relying on the Kd for the material modified by a texture map specified in a map_Kd statement if present.The compilers of this resource believe that the choice of illumination model is irrelevant for 3D printing use and is ignored on import by some software applications.For example, the MTL Loader in the threejs Javascript library appears to ignore illum statements.Comments welcome.
-        map_Kd : specifies a color texture file to be applied to the diffuse reflectivity of the material.During rendering, map_Kd values are multiplied by the Kd values to derive the RGB components.
-*/
         std::string filename = path + getfilename();
         FILE* fp = fopen(filename.c_str(), "w+");
         fprintf(fp, "newmtl %s\n", textures[0].name.c_str());
@@ -223,9 +203,8 @@ struct GeomAABB
 struct MeshTriangle
 {
     uint32_t t_, tt_, ttt_;
-    uint8_t nibble;
-    MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3, uint8_t nibbleval)
-        : t_(v1), tt_(v2), ttt_(v3), nibble(nibbleval)
+    MeshTriangle(uint32_t v1, uint32_t v2, uint32_t v3)
+        : t_(v1), tt_(v2), ttt_(v3)
     {}
 
     std::string v1()
@@ -287,140 +266,6 @@ struct MeshVertex
     std::vector<uint32_t> duplicates;
 };
 
-
-
-std::vector<MeshVertex> parsedVertices;
-
-
-void parse_vertex_array(uint8_t* vtxdata, uint32_t vtxsize)
-{
-    uint32_t offset = 0x6F0;
-    uint32_t id = 0u;
-    GeomAABB aabb;
-    while (offset < vtxsize)
-    {
-        float x = parsef32(vtxdata, offset);
-        float y = parsef32(vtxdata, offset);
-        float z = parsef32(vtxdata, offset);
-        float u1 = parsef32(vtxdata, offset);
-        float u2 = parsef32(vtxdata, offset);
-
-        parsedVertices.push_back(MeshVertex(id++, x, y, z, aabb));
-        //uint16_t i1 = parse16(idxdata, offset);
-        //uint16_t i2 = parse16(idxdata, offset);
-        //uint16_t i3 = parse16(idxdata, offset);
-        //parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
-    }
-    printf("");
-}
-
-struct NibbleAction
-{
-    NibbleAction(
-        int tr1_v1_inc,
-        int tr1_v2_inc,
-        int tr1_v3_inc,
-        int tr2_v1_inc,
-        int tr2_v2_inc,
-        int tr2_v3_inc,
-        int vertex_inc)
-        :
-        m_default_tr1_v1_inc(tr1_v1_inc),
-        m_default_tr1_v2_inc(tr1_v2_inc),
-        m_default_tr1_v3_inc(tr1_v3_inc),
-        m_default_tr2_v1_inc(tr2_v1_inc),
-        m_default_tr2_v2_inc(tr2_v2_inc),
-        m_default_tr2_v3_inc(tr2_v3_inc),
-        m_default_vertex_inc(vertex_inc)
-    {
-        ResetToDefault();
-    }
-
-    void ResetToDefault()
-    {
-        m_tr1_v1_inc = m_default_tr1_v1_inc;
-        m_tr1_v2_inc = m_default_tr1_v2_inc;
-        m_tr1_v3_inc = m_default_tr1_v3_inc;
-        m_tr2_v1_inc = m_default_tr2_v1_inc;
-        m_tr2_v2_inc = m_default_tr2_v2_inc;
-        m_tr2_v3_inc = m_default_tr2_v3_inc;
-        m_vertex_inc = m_default_vertex_inc;
-    }
-
-    void SetTri1(int tr1_v1_inc,
-                 int tr1_v2_inc,
-                 int tr1_v3_inc)
-    {
-        m_tr1_v1_inc = tr1_v1_inc;
-        m_tr1_v2_inc = tr1_v2_inc;
-        m_tr1_v3_inc = tr1_v3_inc;
-    }
-
-
-    void SetTri2(int tr2_v1_inc,
-                 int tr2_v2_inc,
-                 int tr2_v3_inc)
-    {
-        m_tr2_v1_inc = tr2_v1_inc;
-        m_tr2_v2_inc = tr2_v2_inc;
-        m_tr2_v3_inc = tr2_v3_inc;
-    }
-
-    void SetVertexInc(int vertexInc)
-    {
-        m_vertex_inc = vertexInc;
-    }
-
-    int m_tr1_v1_inc;
-    int m_tr1_v2_inc;
-    int m_tr1_v3_inc;
-
-    int m_tr2_v1_inc;
-    int m_tr2_v2_inc;
-    int m_tr2_v3_inc;
-
-    int m_vertex_inc;
-
-    int m_default_tr1_v1_inc;
-    int m_default_tr1_v2_inc;
-    int m_default_tr1_v3_inc;
-
-    int m_default_tr2_v1_inc;
-    int m_default_tr2_v2_inc;
-    int m_default_tr2_v3_inc;
-
-    int m_default_vertex_inc;
-};
-const uint32_t NUM_NIBBLES = 16;
-NibbleAction nibble_actions[NUM_NIBBLES] =
-{
-                // TRI 1 off      TRI 2 OFF      V INC
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0), // 0
-    NibbleAction( -1,  0,  1,     1,  0,  2,     2),   // 1
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 2
-    NibbleAction( -3, -1,  0,     1,  2,  3,     4),   // 3
-    NibbleAction( -1, -3,  0,    -1,  0,  1,     2),   // 4
-    NibbleAction(  0, -2,  1,     1, -2,  2,     3),   // 5
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 6
-    NibbleAction( -1, -2,  0,     1,  2,  3,     4),   // 7
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // 8
-    NibbleAction( -2, -3,  0,     0, -3,  1,     0),   // 9
-    NibbleAction(  0,  0,  0,     0,  0,  0,     0),   // A
-    NibbleAction( -2, -3,  0,     1,  2,  3,     4),   // B
-    NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // C
-    NibbleAction(  0,  1,  2,     2,  1,  3,     4),   // D
-    NibbleAction(  0,  1,  2,     1,  0,  3,     3),   // E
-    NibbleAction(  0,  1,  2,     3,  4,  5,     6),   // F
-};
-
-void resetAllNibbleActions()
-{
-    for (uint32_t i = 0; i < NUM_NIBBLES; ++i)
-    {
-        nibble_actions[i].ResetToDefault();
-    }
-}
-
 struct GeomMeshHeader
 {
     uint32_t signature;
@@ -428,7 +273,7 @@ struct GeomMeshHeader
     uint8_t unk2;
     uint8_t materialId;
     uint16_t unk3;
-    uint16_t unk4;
+    uint16_t numIndices;
     uint32_t allFF;
 
     uint32_t meshTrianglesAddress;
@@ -483,7 +328,7 @@ struct GeomMeshHeader
         unk2 = parse8(data, offset);
         materialId = parse8(data, offset);
         unk3 = parse16(data, offset);
-        unk4 = parse16(data, offset);
+        numIndices = parse16(data, offset);
         allFF = parse32(data, offset);
 
         meshTrianglesAddress = parse32(data, offset);
@@ -511,461 +356,172 @@ struct GeomMeshHeader
         }
     }
 
-    void add_tris(const NibbleAction& action, uint32_t& v, uint8_t nib)
+    std::vector<uint16_t> readVariableBitArray(uint8_t* variableBitIndices, uint32_t numBitsPerValue, uint32_t numVarBitIndices)
     {
-        triangles.push_back(MeshTriangle(v + action.m_tr1_v1_inc, v + action.m_tr1_v2_inc, v + action.m_tr1_v3_inc, nib));
-        triangles.push_back(MeshTriangle(v + action.m_tr2_v1_inc, v + action.m_tr2_v2_inc, v + action.m_tr2_v3_inc, nib));
-        v += action.m_vertex_inc;
+        std::vector<uint16_t> parsedVariableBitIndices;
+        uint32_t total = (numVarBitIndices + 0x1F) & 0xFFFFFFE0;
+        uint32_t offset = (total - 1) * numBitsPerValue;
+        for (uint32_t i = total; i > 0; --i)
+        {
+            uint8_t* start = variableBitIndices + (offset / 8);
+
+            uint32_t first = start[0];
+            uint32_t second = start[1];
+            uint32_t third = start[2];
+
+            uint32_t output = (first << 24) |
+                (second << 16) |
+                (third << 8);
+
+            output <<= (offset & 0x07);
+
+            parsedVariableBitIndices.insert(parsedVariableBitIndices.begin(), output >> (32 - numBitsPerValue));
+            offset -= numBitsPerValue;
+        }
+
+        return parsedVariableBitIndices;
     }
 
-    bool parsenib3(uint8_t nib, uint8_t prevnib, uint8_t nextnib, uint32_t& v)
+    std::vector<uint16_t> read1bArray(const std::vector<uint16_t>& variableBitIndices, const uint8_t* prefaceData, uint32_t numIndices)
     {
-        NibbleAction& action = nibble_actions[nib];
-        switch (nib)
+        std::vector<uint16_t> decodedIndices;
+        const uint8_t MASK_INITIAL = 0x80;
+
+        uint16_t indexValue = 0;
+
+        uint8_t mask = MASK_INITIAL;
+        uint32_t index = 0;
+        uint32_t prefaceDataIndex = 0;
+        const uint32_t count = (numIndices + 0x0F) & 0xFFFFFFF0;
+        for (uint32_t i = 0; i < count; ++i)
         {
-        case 0x00:
-            break;
-        case 0x01:
-            add_tris(action, v, nib);
-            //action.ResetToDefault();
-            break;
-        case 0x02:
-            break;
-        case 0x03:
-            add_tris(action, v, nib);
-            break;
-        case 0x04:
-            add_tris(action, v, nib);
-            break;
-        case 0x05:
-            break;
-        case 0x06:
-            break;
-        case 0x07:
-            add_tris(action, v, nib);
-            action.ResetToDefault();
-            break;
-        case 0x08:
-            break;
-        case 0x09:
-            add_tris(action, v, nib);
-            nibble_actions[0x1].SetTri1(0, 1, 2);
-            nibble_actions[0x1].SetTri2(2, 1, 3);
-            nibble_actions[0x1].SetVertexInc(4);
-            break;
-        case 0x0A:
-            break;
-        case 0x0B:
-            add_tris(action, v, nib);
-            //KEITAIDENWA_break_Mesh01.geom.edge
-            nibble_actions[0x7].SetTri1(0, -3, 1);
-            nibble_actions[0x7].SetTri2(2, 3, 4);
-            nibble_actions[0x7].SetVertexInc(5);
+            uint8_t currentPrefaceByte = prefaceData[prefaceDataIndex];
 
-            break;
-        case 0x0C:
-            add_tris(action, v, nib);
-            add_tris(action, v, nib);
-            add_tris(action, v, nib);
-            add_tris(action, v, nib);
-            add_tris(action, v, nib);
-            break;
-        case 0x0D:
-            add_tris(action, v, nib);
+            if ((currentPrefaceByte & mask) == 0)
+            {
+                decodedIndices.push_back(indexValue++);
+            }
+            else
+            {
+                decodedIndices.push_back(variableBitIndices[index++]);
+            }
 
-            nibble_actions[0x1].SetTri1(-2, -1, 0);
-            nibble_actions[0x1].SetTri2(0, -1, 1);
-            break;
-        case 0x0E:
-            add_tris(action, v, nib);
-            nibble_actions[0x1].SetTri1(-2, 0, 1);
-            nibble_actions[0x1].SetTri2(1, 0, 2);
-            nibble_actions[0x7].SetVertexInc(5);
+            mask >>= 1;
 
-            break;
-        case 0x0F:
-            add_tris(action, v, nib);
-
-            break;
+            if (mask == 0)
+            {
+                mask = MASK_INITIAL;
+                prefaceDataIndex++;
+            }
         }
 
-        if (triangles.size() <= parsedTriangles.size() && triangles.size() > 1)
-        {
-            int idx1 = triangles.size() - 2;
-            int idx2 = triangles.size() - 1;
-
-            if (triangles[idx1] == parsedTriangles[idx1])
-                printf("");
-            else
-                printf("");
-
-            if (triangles[idx2] == parsedTriangles[idx2])
-                printf("");
-            else
-                printf("");
-        }
-        return true;
+        return decodedIndices;
     }
 
-    int nib4sub = 3;
-
-    void parsenib2(uint8_t nib, uint8_t prevnib, uint32_t& v)
+    void readBackRefIndices(std::vector<uint16_t>& indices, uint32_t numIndices, uint16_t backRefOffset)
     {
-        switch (nib)
+        const uint8_t NUM_BACKREFS = 8;
+
+        uint16_t backRefs[NUM_BACKREFS];
+        memset(backRefs, 0, sizeof(backRefs));
+
+        uint32_t count = ((numIndices + 0x1F) & 0xFFFFFFE0) / 8;
+        for (uint32_t i = 0; i < count; i++)
         {
-        case 0x00:
-            break;
-        case 0x01:
-            triangles.push_back(MeshTriangle(v - 1, v, v + 1, nib));
-            triangles.push_back(MeshTriangle(v + 1, v, v + 2, nib));
-            v += 2;
-            break;
-        case 0x02:
-            break;
-        case 0x03:
-            printf("");
-            break;
-        case 0x04:
-            triangles.push_back(MeshTriangle(v - 1, v - nib4sub, v, nib));
-            triangles.push_back(MeshTriangle(v - 1, v    , v + 1, nib));
-            v += 2;
-            nib4sub = 2;
-            printf("");
-            break;
-        case 0x05:
-            triangles.push_back(MeshTriangle(v, v - 2, v + 1, nib));
-            triangles.push_back(MeshTriangle(v + 1, v - 2, v + 2, nib));
-            v += 3;
-            break;
-        case 0x06:
-            break;
-        case 0x07:
-            triangles.push_back(MeshTriangle(v - 1, v - 2, v, nib));
-            triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-            v += 4;
-            break;
-
-        case 0x08:
-            break;
-        case 0x09:
-            break;
-        case 0x0A:
-            break;
-        case 0x0B:
-            break;
-        case 0x0C:
-            break;
-        case 0x0D:
-            /* confirmed from the working index arrays, 1 quad from 4 vertices */
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            triangles.push_back(MeshTriangle(v + 2, v + 1, v + 3, nib));
-            v += 4;
-
-            break;
-        case 0x0E:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            triangles.push_back(MeshTriangle(v + 1, v, v + 3, nib));
-            nib4sub = 3;
-            v += 3;
-            break;
-
-        case 0x0F:
-            /* confirmed from the working index arrays, 2 hard triangles */
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 3;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 3;
-            break;
-        }
-
-        if (triangles.size() <= parsedTriangles.size() && triangles.size() > 1)
-        {
-            int idx1 = triangles.size() - 2;
-            int idx2 = triangles.size() - 1;
-
-            if (triangles[idx1] == parsedTriangles[idx1])
-                printf("");
-            else
-                printf("");
-
-            if (triangles[idx2] == parsedTriangles[idx2])
-                printf("");
-            else
-                printf("");
-        }
-
-    }
-
-    
-    void parsenib(uint8_t nib, uint8_t prevnib, uint32_t& v)
-    {
-        switch (nib)
-        {
-        case 0x00:
-            v += 6;
-            break;
-        case 0x01:
-            if (prevnib != 0x0E)
+            for (uint32_t backref = 0; backref < NUM_BACKREFS; backref++)
             {
-                /* MONOLITH_L_MASTER works prev nib is 0x0E */
-                v -= 1;
-                triangles.push_back(MeshTriangle(v, v + 2, v + 4, nib));
-                triangles.push_back(MeshTriangle(v, v + 4, v + 3, nib));
-                v += 5;
+                backRefs[backref] = indices[(i * NUM_BACKREFS) + backref] - backRefOffset + backRefs[backref];
+                indices[(i * NUM_BACKREFS) + backref] = backRefs[backref];
             }
-            if (prevnib == 0x0D)
-            {
-                //* MONOLITH_L break 1 */
-                v -= 6;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 5, nib));
-                v += 6;
-            }
-            else
-            {
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-            }
-            break;
-
-        case 0x02:
-            break;
-        case 0x03:
-            if (prevnib == 0x0F)
-            {
-                // works in MONOLITH_BIG_damage_Mesh.geom.edge0
-                v -= 1;
-                triangles.push_back(MeshTriangle(v + 2, v, v + 1, nib));
-                v += 1;
-
-                triangles.push_back(MeshTriangle(v, v + 3, v + 1, nib));
-                v += 4;
-            }
-            if (prevnib == 0x0D)
-            {
-                v -= 2;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 3;
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                //v += 4;
-
-            }
-            break;
-        
-        case 0x04:
-            if (prevnib == 0x07)
-            {
-                v -= 2;
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-
-                v += 2;
-
-            }
-            else
-            {
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-            }
-            break;
-
-        case 0x05:
-
-            if (prevnib == 0x01) /* monolith L break 1 */
-            {
-                v -= 4;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                triangles.push_back(MeshTriangle(v, v + 2, v + 3, nib));
-                v += 4;
-
-            }
-            if (prevnib == 0x0E) /* monolith L break 4 */
-            {
-            }
-            if (prevnib == 0x0D)
-            {
-                // works for monolith L damage 3
-                v -= 1;
-
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                triangles.push_back(MeshTriangle(v, v + 2, v + 5, nib));
-                v += 3;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-            }
-            break;
-
-        case 0x06:
-            break;
-        case 0x07:
-            if (prevnib == 0x0F)
-            {
-                // MONOLITH_LG_break_break_3 seems correct
-                v -= 2; // TODO confirm
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-                v += 2;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-                v += 4;
-            }
-            if (prevnib == 0x0D)
-            {
-                v -= 3;
-                triangles.push_back(MeshTriangle(v, v + 2, v + 3, nib));
-                v += 3;
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-                v += 4;
-            }
-            if (prevnib == 0x03)
-            {
-                v -= 1;
-                triangles.push_back(MeshTriangle(v, v + 2, v + 4, nib));
-                v += 4;
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-
-                v += 3;
-            }
-            if (prevnib == 0x07)
-            {
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                v += 1;
-
-                v += 1;
-            }
-
-            
-            break;
-        case 0x08:
-            break;
-        case 0x09:
-            break;
-        case 0x0A:
-            break;
-        case 0x0B:
-            break;
-        
-        case 0x0C:
-            // Works in MONOLITH_BOX_break_break_1.geom.edge0
-            triangles.push_back(MeshTriangle(v, v + 2, v + 1, nib));
-            triangles.push_back(MeshTriangle(v, v + 3, v + 2, nib));
-            v += 4;
-            break;
-
-        case 0x0D:
-            if (prevnib != 5)
-            {
-                // works for most
-                triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-            }
-            else
-            {
-                // works for monolith l damage 3
-                triangles.push_back(MeshTriangle(v, v + 1, v + 3, nib));
-                triangles.push_back(MeshTriangle(v + 1, v + 2, v + 3, nib));
-            }
-            v += 4;
-            break;
-
-        case 0x0E:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            //v += 1;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 3, nib));
-            //v += 1;
-            v += 2;
-            break;
-
-        case 0x0F:
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 3;
-            triangles.push_back(MeshTriangle(v, v + 1, v + 2, nib));
-            v += 3;
-            break;
         }
     }
 
-    void writefaces()
+    std::vector<uint16_t> buildFaces(const std::vector<uint16_t>& indices, uint8_t* faceData, uint32_t numTris)
     {
-        uint32_t v = 0u;
-        uint8_t prevnib = 0u;
-        for (uint8_t face : m_facedata)
+        std::vector<uint16_t> indexArray;
+        const uint8_t TRIS_PER_BYTE = 4;
+        const uint8_t BITS_PER_TRIANGLE = 2;
+        const uint32_t TOTALTRIS = (numTris + 7) & 0xFFFFFFF8;
+
+        uint32_t index = 0;
+        uint32_t faceIndex = 0;
+        uint32_t faceDataSize = TOTALTRIS / TRIS_PER_BYTE;
+        for (uint32_t face = 0; face < faceDataSize; face++)
         {
-            uint8_t nib1 = (face >> 4) & 0x0F;
-            uint8_t nib2 = face & 0x0F;
-            uint8_t nextnib = 0u;
-            if (!parsenib3(nib1, prevnib, nextnib, v)) break;
-            prevnib = nib1;
-            if (!parsenib3(nib2, prevnib, nextnib, v)) break;
-            prevnib = nib2;
+            uint8_t faceByte = faceData[faceIndex++];
+            for (uint32_t tri = 0; tri < TRIS_PER_BYTE; ++tri)
+            {
+                uint8_t operation = faceByte & 0xC0;
+                uint32_t last = indexArray.size();
+                switch (operation)
+                {
+                case 0xC0: // new triangle
+                    indexArray.push_back(indices[index++]); if (index >= indices.size()) return indexArray;
+                    indexArray.push_back(indices[index++]); if (index >= indices.size()) return indexArray;
+                    indexArray.push_back(indices[index++]); if (index >= indices.size()) return indexArray;
+                    break;
+
+                case 0x0: // backref -3 -1 0
+                    indexArray.push_back(indexArray[last - 3]);
+                    indexArray.push_back(indexArray[last - 1]);
+                    indexArray.push_back(indices[index++]); if (index >= indices.size()) return indexArray;
+                    break;
+
+                case 0x40: // backref -1 -2 0
+                    indexArray.push_back(indexArray[last - 1]);
+                    indexArray.push_back(indexArray[last - 2]);
+                    indexArray.push_back(indices[index++]); if (index >= indices.size()) return indexArray;
+                    break;
+
+                case 0x80: // backref -2 -3 0
+                    indexArray.push_back(indexArray[last - 2]);
+                    indexArray.push_back(indexArray[last - 3]);
+                    indexArray.push_back(indices[index++]); if (index >= indices.size()) return indexArray;
+                    break;
+
+                }
+
+                faceByte <<= BITS_PER_TRIANGLE;
+            }
         }
 
-        printf("");
+        return indexArray;
     }
 
-    std::vector<uint8_t> m_prefacedata;
-    std::vector<uint8_t> m_facedata;
-
-    void readTriangleData(uint8_t* data)
+    void parseIndexArray(const uint8_t* data)
     {
         m_triangle_data = new uint8_t[meshTrianglesSize];
+        memset(m_triangle_data, 0, meshTrianglesSize);
         memcpy(m_triangle_data, data + meshTrianglesAddress, meshTrianglesSize);
-        uint32_t offset = 0;
 
-        uint16_t val1 = parse16(m_triangle_data, offset);
-        uint16_t val2 = parse16(m_triangle_data, offset);
-        uint16_t facedatastart = parse16(m_triangle_data, offset);
-        uint16_t val4 = parse16(m_triangle_data, offset);
+        uint32_t readOffset = 0;
+        uint32_t numVarBitIndices = parse16(m_triangle_data, readOffset);
+        uint16_t backRefOffset = parse16(m_triangle_data, readOffset);
+        uint32_t num1BitIndices = parse16(m_triangle_data, readOffset) * 8;
+        uint8_t variableIndexBitSize = parse8(m_triangle_data, readOffset);
 
-        for (uint16_t i = 0; i < facedatastart; ++i)
+        uint32_t numTriangles = numIndices / 3;
+        uint32_t offsetFaceBytes = ((num1BitIndices + 7) / 8) + 8;
+        uint32_t numFaceBytes = (((numTriangles + numTriangles) + 7) / 8);
+        uint32_t offsetArrayVarBit = offsetFaceBytes + numFaceBytes;
+
+        std::vector<uint16_t> variableBitIndices = readVariableBitArray(m_triangle_data + offsetArrayVarBit, variableIndexBitSize, numVarBitIndices);
+        readBackRefIndices(variableBitIndices, numVarBitIndices, backRefOffset);
+        std::vector<uint16_t> decodedIndices = read1bArray(variableBitIndices, m_triangle_data + 8, num1BitIndices);
+        std::vector<uint16_t> indexArray = buildFaces(decodedIndices, m_triangle_data + offsetFaceBytes, numTriangles);
+
+        for (uint32_t i = 0; i < numTriangles; ++i)
         {
-            m_prefacedata.push_back(m_triangle_data[i + 8]);
+            uint32_t i1 = i * 3;
+            uint32_t i2 = (i * 3) + 1;
+            uint32_t i3 = (i * 3) + 2;
+            triangles.push_back(MeshTriangle(indexArray[i1], indexArray[i2], indexArray[i3]));
         }
-
-        for (uint16_t i = 8 + facedatastart; i < meshTrianglesSize; ++i)
-        {
-            m_facedata.push_back(m_triangle_data[i]);
-        }
-    }
-
-    bool isPreFaceDataEmpty()
-    {
-        for (uint8_t byte : m_prefacedata)
-        {
-            if (byte != 0)
-                return false;
-        }
-
-        return true;
-    }
-
-    bool faceDataContainsNibble(uint8_t nibble)
-    {
-        for (uint8_t byte : m_facedata)
-        {
-            uint8_t nib1 = byte & 0x0F;
-            uint8_t nib2 = byte >> 4;
-            if (nib1 == nibble || nib2 == nibble)
-                return true;
-        }
-        return false;
+        delete[] m_triangle_data;
     }
 
     void readTriangleDataFromIndexArray(const std::string& filename, int number)
     {
-
         std::stringstream ss;
         ss << filename << ".idx." << number;
 
@@ -979,50 +535,10 @@ struct GeomMeshHeader
                 uint16_t i1 = parse16(idxdata, offset);
                 uint16_t i2 = parse16(idxdata, offset);
                 uint16_t i3 = parse16(idxdata, offset);
-                parsedTriangles.push_back(MeshTriangle(i1, i2, i3, 0));
+                parsedTriangles.push_back(MeshTriangle(i1, i2, i3));
             }
         }
-        if (parsedTriangles.size() % 2 == 0)
-        {
-            for (uint32_t i = 0; i < parsedTriangles.size() - 1; i += 2)
-            {
-                MeshTriangle& t1 = parsedTriangles[i];
-                MeshTriangle& t2 = parsedTriangles[i + 1];
 
-                for (int nib = 0xF; nib >= 0; --nib)
-                {
-                    uint32_t t1v1 = t1.t_;
-                    uint32_t t1v2 = t1.tt_;
-                    uint32_t t1v3 = t1.ttt_;
-
-                    uint32_t t2v1 = t2.t_;
-                    uint32_t t2v2 = t2.tt_;
-                    uint32_t t2v3 = t2.ttt_;
-
-                    NibbleAction a = nibble_actions[nib];
-                    
-                    t1v1 -= a.m_tr1_v1_inc;
-                    t1v2 -= a.m_tr1_v2_inc;
-                    t1v3 -= a.m_tr1_v3_inc;
-                    t2v1 -= a.m_tr2_v1_inc;
-                    t2v2 -= a.m_tr2_v2_inc;
-                    t2v3 -= a.m_tr2_v3_inc;
-
-                    uint32_t sum = t1v1 + t1v2 + t1v3 + t2v1 + t2v2 + t2v3;
-                    if (sum == 6 * t1v1)
-                    {
-                        t1.nibble = nib;
-                        t2.nibble = nib;
-                        break;
-                    }
-
-                }
-            }
-        }
-        else
-        {
-            printf("");
-        }
     }
 
     void parseFloatBlock(uint8_t* data)
@@ -1059,20 +575,6 @@ struct GeomMeshHeader
 
         offset = textureBlock1Address;
         
-        int min = meshBlock1.size() > parsedVertices.size() ? meshBlock1.size() : parsedVertices.size();
-        //for (int i = 0; i < min; ++i)
-        //{
-        //    if (parsedVertices[i] == meshBlock1[1])
-        //    {
-        //    }
-        //    else
-        //    {
-        //        printf("");
-        //    }
-        //}
-
-
-
         for (uint16_t t = 0; t < (textureBlock1Length / 2 / 2); t++)
         {
             float t1 = parsef16(data, offset);
@@ -1120,8 +622,6 @@ struct GeomMeshHeader
             //for (uint32_t v = 0; v < parsedVertices.size(); ++v)
             {
                 MeshVertex& vertex = meshBlock1[v];
-                //MeshVertex& vertex = parsedVertices[v];
-                //fprintf(dmp, "# addr = %08x\n", meshBlock1[v].m_addr);
                 fprintf(dmp, "#%u ", v + 1);
 
 
@@ -1143,11 +643,6 @@ struct GeomMeshHeader
 
                 fprintf(dmp, "v %f %f %f\n", vertex.vx, vertex.vy, vertex.vz);
                 fprintf(dmp, "vt %f %f\n\n", vertex.tx, vertex.ty * -1);
-                //fprintf(dmp, "f -3/-3 -2/-2 -1/-1\n");
-                //if (index % 4 == 0)
-                //{
-                //    fprintf(dmp, "f -4/-4 -3/-3 -2/-2 -1/-1\n");
-                //}
                 index++;
             }
 
@@ -1165,12 +660,6 @@ struct GeomMeshHeader
 
             fprintf(dmp, "\n");
 
-            //uint32_t vertex = 3;
-            //while (vertex <= meshBlock1.size())
-            //{
-            //    fprintf(dmp, "f %u/%u %u/%u %u/%u\n", vertex-2, vertex - 2, vertex - 1, vertex - 1, vertex, vertex);
-            //    vertex+=3;
-            //}
             uint32_t n_tri = 0;
 
             std::vector<MeshTriangle>& tris = parsedTriangles.size() > 0 ? parsedTriangles : triangles;
@@ -1178,7 +667,6 @@ struct GeomMeshHeader
             int count = 0;
             for (MeshTriangle& tri : tris)
             {
-                fprintf(dmp, "#nib = 0x0%x tri#=%u\n", tri.nibble, n_tri++);
                 fprintf(dmp, "f %s %s %s\n", tri.v1().c_str(), tri.v2().c_str(), tri.v3().c_str());
                 count++;
                 if (count % 2 == 0)
@@ -1232,51 +720,15 @@ struct Geom
         }
     }
 
-    bool faceDataContainsNibble(uint8_t nibble)
-    {
-        if (meshHeaders.size() > 1)
-            return false;
-
-        for (int i = 0; i < meshHeaders.size(); ++i)
-        {
-            if (meshHeaders[i].faceDataContainsNibble(nibble))
-                return true;
-        }
-        return false;
-    }
-
-    void readTriangleData(uint8_t* data)
-    {
-        for (int i = 0; i < meshHeaders.size(); ++i)
-        {
-            meshHeaders[i].readTriangleData(data);
-        }
-    }
-
-    bool hasEmptyPreFaceData()
-    {
-        for (int i = 0; i < meshHeaders.size(); ++i)
-        {
-            if (meshHeaders[i].isPreFaceDataEmpty())
-                return true;
-        }
-
-        return false;
-    }
-
     void parseMesh(uint8_t* data, bool readIdx)
     {
         for (int i = 0; i < meshHeaders.size(); ++i)
-        //for (auto& mesh : meshHeaders)
         {
             meshHeaders[i].parseBlock1(data);
             meshHeaders[i].parseFloatBlock(data);
             if (readIdx)
                 meshHeaders[i].readTriangleDataFromIndexArray(m_filename, i);
-            meshHeaders[i].readTriangleData(data);
-            meshHeaders[i].writefaces();
-            //mesh.parseBlock1(data);
-            printf("");
+            meshHeaders[i].parseIndexArray(data);
         }
     }
 
@@ -1564,95 +1016,14 @@ int main(int argc, char* argv[])
 //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Keitaidenwa/KEITAIDENWA_break_Mesh01.geom.edge");
 //files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/Mugcup/Mugcup_break_break3.geom.edge");
-files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/GBC/GBC_break_Mesh4.geom.edge");
+//files.push_back("D:/trash panic/Dumps/Stage1Dmp_Correct/GBC/GBC_break_Mesh4.geom.edge");
 
+files.push_back("D:/trash panic/reveng/Stage5_Geom.dmp/YUDEN/YUDEN_MASTER.geom.edge");
 #endif    
 
 //#define DECODE_ONLY
 #define MULTIPLE
-//#define SCAN
 
-
-#ifdef SCAN
-files.clear();
-   // Create the file object (input)
-std::ifstream infile("allWithout.txt");
-
-// Temporary buffer
-std::string temp;
-
-// Get the input from the input file until EOF
-while (std::getline(infile, temp)) {
-    // Add to the list of output strings
-    files.push_back(temp);
-}
-
-std::vector<std::vector<std::string>> meshesPerNibble;
-
-for (uint32_t i = 0; i < NUM_NIBBLES; ++i)
-{
-    meshesPerNibble.push_back(std::vector<std::string>());
-}
-
-std::vector<std::string> meshesWithoutPrefaceData;
-for (const std::string& file : files)
-{
-    int geomsize;
-    uint8_t* data = readfile(file, geomsize);
-    Geom g(file, geomsize);
-    g.parse(data);
-    g.parseMeshHeaders(data);
-    g.readTriangleData(data);
-
-    if (geomsize > 10000)
-    {
-        delete[] data;
-        continue;
-    }
-
-    for (uint32_t i = 0; i < NUM_NIBBLES; ++i)
-    {
-        if (g.faceDataContainsNibble(i))
-        {
-            meshesPerNibble[i].push_back(file);
-        }
-    }
-
-    //if (g.hasEmptyPreFaceData())
-    //{
-    //    meshesWithoutPrefaceData.push_back(file);
-    //}
-    //else
-    //{
-    //    printf("");
-    //}
-}
-
-//printf("");
-//FILE* fp = fopen("allWithout.txt", "w+");
-//for (const std::string& file : meshesWithoutPrefaceData)
-//{
-//    fprintf(fp, "%s\n", file.c_str());
-//}
-//fclose(fp);
-//printf("");
-
-for (uint32_t nib = 0; nib < NUM_NIBBLES; ++nib)
-{
-    std::stringstream s;
-    s << "nib" << "_" << nib << ".txt";
-    FILE* fp = fopen(s.str().c_str(), "w+");
-    for (const std::string& file : meshesPerNibble[nib])
-    {
-        fprintf(fp, "%s\n", file.c_str());
-    }
-    fclose(fp);
-
-}
-
-printf("");
-
-#else
 #ifdef MULTIPLE
     for (const std::string& file: files)
     {
@@ -1678,7 +1049,7 @@ printf("");
         Geom g(file, geomsize);
         g.parse(data);
         g.parseMeshHeaders(data);
-        bool readIdx = true;
+        bool readIdx = false;
         
         g.parseMesh(data, readIdx);
 #ifndef DECODE_ONLY
@@ -1688,5 +1059,4 @@ printf("");
 #ifdef MULTIPLE
     }
 #endif
-#endif 
 }
