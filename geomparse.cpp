@@ -770,7 +770,7 @@ int main(int argc, char* argv[])
         printf("Usage geomparse mesh\n");
         return -1;
     }
-    const char* file = argv[1];
+    std::string file = argv[1];
 #else
     std::vector<std::string> files;
     //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Bluerayrecoder/Bluerayrecoder_damage_Mesh.geom.edge");
