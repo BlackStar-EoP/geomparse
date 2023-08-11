@@ -408,6 +408,7 @@ struct GeomMeshHeader
         uint32_t index = 0;
         uint32_t prefaceDataIndex = 0;
         const uint32_t count = (numIndices + 0x0F) & 0xFFFFFFF0;
+        //this->numIndices
         for (uint32_t i = 0; i < count; ++i)
         {
             uint8_t currentPrefaceByte = prefaceData[prefaceDataIndex];
@@ -427,6 +428,10 @@ struct GeomMeshHeader
             {
                 mask = MASK_INITIAL;
                 prefaceDataIndex++;
+                if (prefaceDataIndex >= (numIndices / 8))
+                {
+                    break;
+                }
             }
         }
 
@@ -768,7 +773,11 @@ int main(int argc, char* argv[])
     const char* file = argv[1];
 #else
     std::vector<std::string> files;
-    files.push_back("D:/trash panic/Dumps/Stage1Dmp/Pen1/Pen1_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Bluerayrecoder/Bluerayrecoder_damage_Mesh.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Bluerayrecoder/Bluerayrecoder_break_Mesh5.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage5_Geom.dmp/Yuden/YUDEN_MASTER.geom.edge");
+    
+    
 
 //#define DECODE_ONLY
 #define MULTIPLE
@@ -802,8 +811,15 @@ int main(int argc, char* argv[])
         g.parse(data);
         g.parseMeshHeaders(data);
         bool readIdx = false;
+        try
+        {
+            g.parseMesh(data, readIdx);
+        }
+        catch (...)
+        {
+            printf("Exception thrown when parsing %s\n", file.c_str());
+        }
         
-        g.parseMesh(data, readIdx);
 #ifndef DECODE_ONLY
         g.dump_meshes();
 #endif
