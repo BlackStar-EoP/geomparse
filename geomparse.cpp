@@ -628,10 +628,13 @@ struct GeomMeshHeader
         
         if (dmp)
         {
-            GeomMaterialEntry mat = geommaterial.materialEntries[materialId];
+            if (materialId < geommaterial.materialEntries.size())
+            {
+                GeomMaterialEntry mat = geommaterial.materialEntries[materialId];
 
-            fprintf(dmp, "mtllib %s\n", mat.getfilename().c_str());
-            fprintf(dmp, "usemtl %s\n", mat.name().c_str());
+                fprintf(dmp, "mtllib %s\n", mat.getfilename().c_str());
+                fprintf(dmp, "usemtl %s\n", mat.name().c_str());
+            }
             uint32_t index = 1;
             for (uint32_t v = 0; v < meshBlock1.size(); ++v)
             {
@@ -775,7 +778,9 @@ int main(int argc, char* argv[])
     std::vector<std::string> files;
     //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Bluerayrecoder/Bluerayrecoder_damage_Mesh.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Bluerayrecoder/Bluerayrecoder_break_Mesh5.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage5_Geom.dmp/Yuden/YUDEN_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage5_Geom.dmp/Yuden/YUDEN_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/huta_huta_3.geom.edge");
     
     
 
