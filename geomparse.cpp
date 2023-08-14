@@ -780,7 +780,9 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage2_Geom.dmp/Bluerayrecoder/Bluerayrecoder_break_Mesh5.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage5_Geom.dmp/Yuden/YUDEN_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
-    files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/huta_huta_3.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/huta_huta_3.geom.edge");
+    //files.push_back("d:/trash panic/reveng/Stage5_Geom.dmp/RES_MDL_S_UI/tmp_tmp_Default.geom.edge");
+    
     
     
 
@@ -794,42 +796,43 @@ int main(int argc, char* argv[])
     for (const std::string& file: files)
     {
 #endif
-        std::string path = file;
-        if (path.find_last_of("/") != std::string::npos)
-        {
-            path = path.substr(0, path.find_last_of("/")) + "/";
-        }
-
-        int geomsize;
-        uint8_t* data = readfile(file, geomsize);
-        std::string material = std::regex_replace(file, std::regex("geom.edge"), "mat.edge");
-
-        int matsize;
-        uint8_t* matdata = readfile(material, matsize);
-
-        GeomMaterial m(material);
-        m.parse(matdata);
-        m.dumpMaterials(path);
-        geommaterial = m;
-
-        Geom g(file, geomsize);
-        g.parse(data);
-        g.parseMeshHeaders(data);
-        bool readIdx = false;
         try
         {
+            std::string path = file;
+            if (path.find_last_of("/") != std::string::npos)
+            {
+                path = path.substr(0, path.find_last_of("/")) + "/";
+            }
+
+            int geomsize;
+            uint8_t* data = readfile(file, geomsize);
+            std::string material = std::regex_replace(file, std::regex("geom.edge"), "mat.edge");
+
+            int matsize;
+            uint8_t* matdata = readfile(material, matsize);
+
+            GeomMaterial m(material);
+            m.parse(matdata);
+            m.dumpMaterials(path);
+            geommaterial = m;
+
+            Geom g(file, geomsize);
+            g.parse(data);
+            g.parseMeshHeaders(data);
+            bool readIdx = false;
             g.parseMesh(data, readIdx);
+
+        
+#ifndef DECODE_ONLY
+            g.dump_meshes();
+#endif
         }
         catch (...)
         {
             printf("Exception thrown when parsing %s\n", file.c_str());
         }
-        
-#ifndef DECODE_ONLY
-        g.dump_meshes();
-#endif
 
 #ifdef MULTIPLE
-    }
+        }
 #endif
 }
