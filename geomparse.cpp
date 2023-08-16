@@ -113,7 +113,10 @@ struct GeomMaterialEntry
 
     std::string name()
     {
-        return textures[0].name;
+        if (textures.size() > 0)
+            return textures[0].name;
+
+        return "NO_TEXTURE";
     }
 
     std::string getfilename()
@@ -133,14 +136,26 @@ struct GeomMaterialEntry
 
     void dumpMaterial(const std::string& path)
     {
-        std::string filename = path + getfilename();
-        FILE* fp = fopen(filename.c_str(), "w+");
-        fprintf(fp, "newmtl %s\n", textures[0].name.c_str());
-        fprintf(fp, "Ka 1.000000 1.000000 1.000000\n");
-        fprintf(fp, "Kd 1.000000 1.000000 1.000000\n");
-        fprintf(fp, "Ks 0.000000 0.000000 0.000000\n");
-        fprintf(fp, "map_Kd %s\n", textures[0].texfile.c_str());
-        fclose(fp);
+        if (textures.size() > 0)
+        {
+            std::string filename = path + getfilename();
+            FILE* fp = fopen(filename.c_str(), "w+");
+            fprintf(fp, "newmtl %s\n", textures[0].name.c_str());
+            fprintf(fp, "Ka 1.000000 1.000000 1.000000\n");
+            fprintf(fp, "Kd 1.000000 1.000000 1.000000\n");
+            fprintf(fp, "Ks 0.000000 0.000000 0.000000\n");
+            fprintf(fp, "map_Kd %s\n", textures[0].texfile.c_str());
+            if (textures.size() > 1)
+            {
+                fprintf(fp, "norm %s\n", textures[1].texfile.c_str());
+            }
+
+            if (textures.size() > 2)
+            {
+                printf("More than 2 textures, investigate!\n");
+            }
+            fclose(fp);
+        }
     }
 };
 
@@ -225,19 +240,19 @@ struct MeshTriangle
     std::string v1()
     {
         std::stringstream ss;
-        ss << (t_ + 1) << "/" << (t_ + 1);
+        ss << (t_ + 1) << "/" << (t_ + 1) << "/" << (t_ + 1);
         return ss.str();
     }
     std::string v2()
     {
         std::stringstream ss;
-        ss << (tt_ + 1) << "/" << (tt_ + 1);
+        ss << (tt_ + 1) << "/" << (tt_ + 1) << "/" << (tt_ + 1);
         return ss.str();
     }
     std::string v3()
     {
         std::stringstream ss;
-        ss << (ttt_ + 1) << "/" << (ttt_ + 1);
+        ss << (ttt_ + 1) << "/" << (ttt_ + 1) << "/" << (ttt_ + 1);
         return ss.str();
     }
 
@@ -253,6 +268,7 @@ struct MeshVertex
 {
     float vx, vy, vz;
     float tx, ty;
+    float nx, ny, nz;
     uint32_t id_;
     MeshVertex(uint32_t id, float x, float y, float z, GeomAABB& aabb)
         : id_(id), vx(x), vy(y), vz(z)
@@ -279,6 +295,34 @@ struct MeshVertex
 
     bool isValid = true;
     std::vector<uint32_t> duplicates;
+};
+
+struct vec3
+{
+    float x_;
+    float y_;
+    float z_;
+
+    vec3(float x, float y, float z)
+    : x_(x), y_(y), z_(z)
+    {
+    }
+
+    float magnitude()
+    {
+        return sqrt((x_ * x_) + (y_ * y_) + (z_ * z_));
+    }
+
+    void normalize()
+    {
+        float length = magnitude();
+        if (length > 0)
+        {
+            x_ /= length;
+            y_ /= length;
+            z_ /= length;
+        }
+    }
 };
 
 struct GeomMeshHeader
@@ -317,8 +361,7 @@ struct GeomMeshHeader
 
     GeomAABB aabb_;
 
-    std::vector<float> floatsblock1;
-    std::vector<float> floatsblock2;
+    std::vector<vec3> normals;
 
     struct MeshFloat
     {
@@ -408,7 +451,7 @@ struct GeomMeshHeader
         uint32_t index = 0;
         uint32_t prefaceDataIndex = 0;
         const uint32_t count = (numIndices + 0x0F) & 0xFFFFFFF0;
-        //this->numIndices
+
         for (uint32_t i = 0; i < count; ++i)
         {
             uint8_t currentPrefaceByte = prefaceData[prefaceDataIndex];
@@ -566,17 +609,27 @@ struct GeomMeshHeader
         uint32_t offset = meshBlock1EndAddress;
         while (offset < textureBlock1Address)
         {
-            float val = parse32(data, offset);
-            floatsblock1.push_back(val);
+            float x = parse16(data, offset);
+            float y = parse16(data, offset);
+            float z = parse16(data, offset);
+            vec3 normal(x, y, z);
+            normal.normalize();
+            normals.push_back(normal);
         }
-
-        offset = meshBlock1EndAddress;
-        while (offset < textureBlock1Address)
+        
+        if (normals.size() >= meshBlock1.size())
         {
-            float val = parse16(data, offset);
-            floatsblock2.push_back(val);
+            for (size_t i = 0; i < meshBlock1.size(); ++i)
+            {
+                meshBlock1[i].nx = normals[i].x_;
+                meshBlock1[i].ny = normals[i].y_;
+                meshBlock1[i].nz = normals[i].z_;
+            }
         }
-
+        else
+        {
+            printf("Error decoding normals, less normals than vertices!\n");
+        }
     }
 
     void parseBlock1(uint8_t* data)
@@ -659,7 +712,8 @@ struct GeomMeshHeader
                 }
 
                 fprintf(dmp, "v %f %f %f\n", vertex.vx, vertex.vy, vertex.vz);
-                fprintf(dmp, "vt %f %f\n\n", vertex.tx, vertex.ty * -1);
+                fprintf(dmp, "vt %f %f\n", vertex.tx, vertex.ty * -1);
+                fprintf(dmp, "vn %f %f %f\n\n", vertex.nx, vertex.ny, vertex.nz);
                 index++;
             }
 
@@ -782,6 +836,8 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/huta_huta_3.geom.edge");
     //files.push_back("d:/trash panic/reveng/Stage5_Geom.dmp/RES_MDL_S_UI/tmp_tmp_Default.geom.edge");
+    files.push_back("d:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge");
+    
     
     
     
