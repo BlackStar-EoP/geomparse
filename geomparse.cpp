@@ -646,18 +646,11 @@ struct GeomMeshHeader
             normals.push_back(normal);
         }
 
-        if (normals.size() >= meshBlock1.size())
+        for (uint32_t i = 0; i < num_vertices; ++i)
         {
-            for (size_t i = 0; i < meshBlock1.size(); ++i)
-            {
-                meshBlock1[i].nx = normals[i].x_;
-                meshBlock1[i].ny = normals[i].y_;
-                meshBlock1[i].nz = normals[i].z_;
-            }
-        }
-        else
-        {
-            printf("Error decoding normals, less normals than vertices!\n");
+            meshBlock1[i].nx = normals[i].x_;
+            meshBlock1[i].ny = normals[i].y_;
+            meshBlock1[i].nz = normals[i].z_;
         }
     }
 
@@ -718,7 +711,7 @@ struct GeomMeshHeader
                 fprintf(dmp, "usemtl %s\n", mat.name().c_str());
             }
             uint32_t index = 1;
-            for (uint32_t v = 0; v < meshBlock1.size(); ++v)
+            for (uint32_t v = 0; v < num_vertices; ++v)
             {
                 MeshVertex& vertex = meshBlock1[v];
                 fprintf(dmp, "#%u ", v + 1);
@@ -745,18 +738,6 @@ struct GeomMeshHeader
                 fprintf(dmp, "vn %f %f %f\n\n", vertex.nx, vertex.ny, vertex.nz);
                 index++;
             }
-
-            //for (uint16_t i = 0; i < meshTrianglesSize; ++i)
-            //{
-            //    if ((i % 16 == 0) && (i > 0))
-            //    {
-            //        fprintf(dmp, "\n");
-            //    }
-
-            //    uint8_t val = m_triangle_data[i];
-            //    fprintf(dmp, "%02X ", val);
-
-            //}
 
             fprintf(dmp, "\n");
 
@@ -872,10 +853,10 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/2P_vs_Geom.dmp/Post/Post_break_stone.geom.edge");
     //files.push_back("D:/trash panic/reveng/2P_vs_Geom.dmp/Post/Post_damage_damage.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh1.geom.edge");
-    files.push_back("d:/trash panic/reveng/Stage1_Geom.dmp/Teapot/Teapot_MASTER.geom.edge");
+    //files.push_back("d:/trash panic/reveng/Stage1_Geom.dmp/Teapot/Teapot_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Title_Geom.dmp/PressStart/PRESS_START_Default.geom.edge");
     
-    
+    files.push_back("D:/trash panic/reveng/Mission_1_Geom.dmp/Drumcan/Drumcan_damage_damage.geom.edge");
 
 //#define DECODE_ONLY
 #define MULTIPLE
