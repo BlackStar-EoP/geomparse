@@ -20,6 +20,11 @@ inline uint16_t Reverse16(uint16_t value)
         ((value & 0xFF00) >> 8));
 }
 
+inline int16_t Reversei16(int16_t value)
+{
+    return (((value & 0x00FF) << 8) |
+        ((value & 0xFF00) >> 8));
+}
 
 
 uint8_t* readfile(const std::string& file, int& size)
@@ -68,6 +73,23 @@ uint16_t parse16(uint8_t* data, uint32_t& offset)
     offset += sizeof(uint16_t);
     return Reverse16(*buf);
 }
+
+int16_t parsei16(uint8_t* data, uint32_t& offset)
+{
+    int16_t* buf = (int16_t*)&data[offset];
+    offset += sizeof(int16_t);
+    return Reverse16(*buf);
+}
+
+float parsef8(uint8_t* data, uint32_t& offset)
+{
+    const float scale = 1.0f / 255.0f;
+
+    float val = (uint32_t)data[offset] * scale;
+    ++offset;
+    return val;
+}
+
 
 uint8_t parse8(uint8_t* data, uint32_t& offset)
 {
@@ -346,7 +368,7 @@ struct GeomMeshHeader
     uint16_t meshBlock1Length;
     uint16_t padding2;
 
-    uint32_t unk32_1;
+    uint32_t normalBlockLength;
     uint32_t unk32_2;
 
     uint32_t textureBlock1Address;
@@ -401,7 +423,7 @@ struct GeomMeshHeader
 
         padding2 = parse16(data, offset);
 
-        unk32_1 = parse32(data, offset);
+        normalBlockLength = parse32(data, offset);
         unk32_2 = parse32(data, offset);
 
         textureBlock1Address = parse32(data, offset);
@@ -607,16 +629,23 @@ struct GeomMeshHeader
     void parseFloatBlock(uint8_t* data)
     {
         uint32_t offset = meshBlock1EndAddress;
-        while (offset < textureBlock1Address)
+
+        for (uint32_t i = 0; i < num_vertices; ++i)
         {
-            float x = parse16(data, offset);
-            float y = parse16(data, offset);
-            float z = parse16(data, offset);
-            vec3 normal(x, y, z);
+            float nx = parsef8(data, offset) - 0.5f;
+            float ny = parsef8(data, offset) - 0.5f;
+            float nz = parsef8(data, offset) - 0.5f;
+
+            float tx = parsef8(data, offset) - 0.5f;
+            float ty = parsef8(data, offset) - 0.5f;
+            float tz = parsef8(data, offset) - 0.5f;
+
+
+            vec3 normal(nx, ny, nz);
             normal.normalize();
             normals.push_back(normal);
         }
-        
+
         if (normals.size() >= meshBlock1.size())
         {
             for (size_t i = 0; i < meshBlock1.size(); ++i)
@@ -717,17 +746,17 @@ struct GeomMeshHeader
                 index++;
             }
 
-            for (uint16_t i = 0; i < meshTrianglesSize; ++i)
-            {
-                if ((i % 16 == 0) && (i > 0))
-                {
-                    fprintf(dmp, "\n");
-                }
+            //for (uint16_t i = 0; i < meshTrianglesSize; ++i)
+            //{
+            //    if ((i % 16 == 0) && (i > 0))
+            //    {
+            //        fprintf(dmp, "\n");
+            //    }
 
-                uint8_t val = m_triangle_data[i];
-                fprintf(dmp, "%02X ", val);
+            //    uint8_t val = m_triangle_data[i];
+            //    fprintf(dmp, "%02X ", val);
 
-            }
+            //}
 
             fprintf(dmp, "\n");
 
@@ -836,9 +865,15 @@ int main(int argc, char* argv[])
     //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/gomibako_gomibako_1.geom.edge");
     //files.push_back("D:/trash panic/reveng/Stage4_Geom.dmp/RES_MDL_S_STAGE/huta_huta_3.geom.edge");
     //files.push_back("d:/trash panic/reveng/Stage5_Geom.dmp/RES_MDL_S_UI/tmp_tmp_Default.geom.edge");
-    files.push_back("d:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge");
+    //files.push_back("d:/trash panic/reveng/Stage2_Geom.dmp/LCTV/LCTV_MASTER.geom.edge");
+    //files.push_back("d:/trash panic/reveng/Stage1_Geom.dmp/BaboCoin/BaboCoin_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/2P_vs_Geom.dmp/SMM/SMM_SLIP_anim.geom.edge");
     
-    
+    //files.push_back("D:/trash panic/reveng/2P_vs_Geom.dmp/Post/Post_break_stone.geom.edge");
+    //files.push_back("D:/trash panic/reveng/2P_vs_Geom.dmp/Post/Post_damage_damage.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh1.geom.edge");
+    files.push_back("d:/trash panic/reveng/Stage1_Geom.dmp/Teapot/Teapot_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/reveng/Title_Geom.dmp/PressStart/PRESS_START_Default.geom.edge");
     
     
 
