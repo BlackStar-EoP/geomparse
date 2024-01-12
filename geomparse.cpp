@@ -5,6 +5,7 @@
 #include <regex>
 #include "half.hpp"
 #include <fstream>
+#include <regex>
 
 inline uint32_t Reverse32(uint32_t value)
 {
@@ -83,9 +84,9 @@ int16_t parsei16(uint8_t* data, uint32_t& offset)
 
 float parsef8(uint8_t* data, uint32_t& offset)
 {
-    const float scale = 1.0f / 255.0f;
-
-    float val = (uint32_t)data[offset] * scale;
+    const float scale = 1.0f / 127.0f;
+    int8_t ival = data[offset];
+    float val = ival * scale;
     ++offset;
     return val;
 }
@@ -162,14 +163,18 @@ struct GeomMaterialEntry
         {
             std::string filename = path + getfilename();
             FILE* fp = fopen(filename.c_str(), "w+");
+            std::regex dds("\\.dds");
+            std::string tex = std::regex_replace(textures[0].texfile, dds, ".png");
             fprintf(fp, "newmtl %s\n", textures[0].name.c_str());
             fprintf(fp, "Ka 1.000000 1.000000 1.000000\n");
             fprintf(fp, "Kd 1.000000 1.000000 1.000000\n");
             fprintf(fp, "Ks 0.000000 0.000000 0.000000\n");
-            fprintf(fp, "map_Kd %s\n", textures[0].texfile.c_str());
+            fprintf(fp, "map_Kd %s\n", tex.c_str());
             if (textures.size() > 1)
             {
-                fprintf(fp, "norm %s\n", textures[1].texfile.c_str());
+                tex = std::regex_replace(textures[1].texfile, dds, ".png");
+
+                fprintf(fp, "norm %s\n", tex.c_str());
             }
 
             if (textures.size() > 2)
@@ -632,9 +637,9 @@ struct GeomMeshHeader
 
         for (uint32_t i = 0; i < num_vertices; ++i)
         {
-            float nx = parsef8(data, offset) - 0.5f;
-            float ny = parsef8(data, offset) - 0.5f;
-            float nz = parsef8(data, offset) - 0.5f;
+            float nx = parsef8(data, offset);
+            float ny = parsef8(data, offset);
+            float nz = parsef8(data, offset);
 
             float tx = parsef8(data, offset) - 0.5f;
             float ty = parsef8(data, offset) - 0.5f;
@@ -856,7 +861,7 @@ int main(int argc, char* argv[])
     //files.push_back("d:/trash panic/reveng/Stage1_Geom.dmp/Teapot/Teapot_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Title_Geom.dmp/PressStart/PRESS_START_Default.geom.edge");
     
-    files.push_back("D:/trash panic/reveng/Mission_1_Geom.dmp/Drumcan/Drumcan_damage_damage.geom.edge");
+    files.push_back("D:/trash panic/test/Piggybank/piggybank_MASTER.geom.edge");
 
 //#define DECODE_ONLY
 #define MULTIPLE
