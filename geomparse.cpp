@@ -82,10 +82,17 @@ int16_t parsei16(uint8_t* data, uint32_t& offset)
     return Reverse16(*buf);
 }
 
+static int min = 0;
+static int max = 0;
+
 float parsef8(uint8_t* data, uint32_t& offset)
 {
     const float scale = 1.0f / 127.0f;
     int8_t ival = data[offset];
+    if (ival < min)
+        min = ival;
+    if (ival > max)
+        max = ival;
     float val = ival * scale;
     ++offset;
     return val;
@@ -637,14 +644,16 @@ struct GeomMeshHeader
 
         for (uint32_t i = 0; i < num_vertices; ++i)
         {
-            float nx = parsef8(data, offset);
-            float ny = parsef8(data, offset);
-            float nz = parsef8(data, offset);
+            
 
-            float tx = parsef8(data, offset) - 0.5f;
-            float ty = parsef8(data, offset) - 0.5f;
-            float tz = parsef8(data, offset) - 0.5f;
+            float nx = parsef8(data, offset) -0.5f;
+            float ny = parsef8(data, offset) - 0.5f;
+            float nz = parsef8(data, offset) - 0.5f;
+            offset += 3;
 
+            //float nx = parsef8(data, offset);
+            //float ny = parsef8(data, offset);
+            //float nz = parsef8(data, offset);
 
             vec3 normal(nx, ny, nz);
             normal.normalize();
@@ -857,11 +866,11 @@ int main(int argc, char* argv[])
     
     //files.push_back("D:/trash panic/reveng/2P_vs_Geom.dmp/Post/Post_break_stone.geom.edge");
     //files.push_back("D:/trash panic/reveng/2P_vs_Geom.dmp/Post/Post_damage_damage.geom.edge");
-    //files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh1.geom.edge");
+    files.push_back("D:/trash panic/reveng/Stage1_Geom.dmp/Humberger/HUMBURGER_break_Mesh2.geom.edge");
     //files.push_back("d:/trash panic/reveng/Stage1_Geom.dmp/Teapot/Teapot_MASTER.geom.edge");
     //files.push_back("D:/trash panic/reveng/Title_Geom.dmp/PressStart/PRESS_START_Default.geom.edge");
     
-    files.push_back("D:/trash panic/test/Piggybank/piggybank_MASTER.geom.edge");
+    //files.push_back("D:/trash panic/test/Piggybank/piggybank_MASTER.geom.edge");
 
 //#define DECODE_ONLY
 #define MULTIPLE
